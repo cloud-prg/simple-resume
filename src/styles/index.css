@@ -3,5 +3,6 @@
 @tailwind utilities;
 
 :root {
-    --header-height: 60px;
+    --header-height: 0;
+    --primary: #0077cc;
 }

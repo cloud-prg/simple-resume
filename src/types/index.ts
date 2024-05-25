@@ -4,6 +4,7 @@ export type ContactType = Partial<{
     email: string;
     address: string;
     career: string;
+    location: string;
 }>
 
 export type EducationType = Partial<{
@@ -21,8 +22,8 @@ export type ExperienceType = Partial<{
     startDate: string;
     endDate: string;
     keywords: string[];
-    workContent: string[];
-    summary: string[];
+    workContent: { value: string }[];
+    summary: { value: string }[];
 }>
 
 export interface ResumeProps {

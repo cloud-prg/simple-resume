@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 const BasicLayout: React.FC<any> = () => {
     // const Index: any = () => {
     return <div className={styles.layout}>
-        <Header />
+        {/* <Header /> */}
         <div className={styles.content}>
             <Outlet />
         </div>
