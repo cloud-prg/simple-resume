@@ -4,7 +4,8 @@ import path from 'path';
 
 const UTIL_DIR = process.cwd();
 const PROJECT_DIR = path.join(UTIL_DIR.split('src')[0]);
-const PUBLIC_DIR = path.join(PROJECT_DIR, 'public');
+const DIST_DIR = path.join(PROJECT_DIR, 'dist');
+const JIT_DIR = path.join(DIST_DIR, 'tailwind-jit.css');
 
 // /**
 //  * 检测指定文件是否存在于 public 目录中，如果不存在则执行指定命令
@@ -12,11 +13,11 @@ const PUBLIC_DIR = path.join(PROJECT_DIR, 'public');
 //  * @param {string} command 要执行的命令
 //  * @returns {Promise<void>} 操作完成后的 Promise
 //  */
-export function checkPublicFileAndExec(filename:string, command:string) {
-    const fullPath = `${PUBLIC_DIR}/${filename}`;
+export function checkPublicFileAndExec(filename: string, command: string) {
+    const validPath = `${DIST_DIR}/${filename}`;
 
     return new Promise((resolve, reject) => {
-        if (fs.existsSync(fullPath)) {
+        if (fs.existsSync(validPath)) {
             // console.log(`File ${filename} already exists in public directory.`);
             resolve(`File ${filename} already exists in public directory.`);
         } else {
@@ -31,7 +32,7 @@ export function checkPublicFileAndExec(filename:string, command:string) {
 //  * @param {string} command 要执行的命令
 //  * @returns {Promise<void>} 操作完成后的 Promise
 //  */
-export function executeCommand(command:string): Promise<void> {
+export function executeCommand(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -50,7 +51,7 @@ export function executeCommand(command:string): Promise<void> {
 
 export async function autoGenerateTailwindJIT() {
     try {
-        await checkPublicFileAndExec('tailwind.css', `npx tailwindcss -o ${PUBLIC_DIR}/tailwind.css --watch`)
+        await checkPublicFileAndExec('tailwind.css', `npx tailwindcss -o ${JIT_DIR} --watch`)
         console.log('File check and execute completed.');
     } catch (error) {
         console.error('Error:', error);

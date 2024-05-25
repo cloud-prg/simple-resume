@@ -5,7 +5,8 @@ import { autoGenerateTailwindJIT } from './src/util'
 const isDev = process.env.NODE_ENV === 'development'
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: isDev ? '' : '/simple-resume/',
+  // base: isDev ? '' : '/simple-resume/',
+  base: './',
   server: {
     port: 4300,
   },
@@ -17,9 +18,23 @@ export default defineConfig({
     }
   }
   ],
+
   resolve: {
     alias: {
       '@': '/src',
     }
-  }
+  },
+  build: {
+    // minify: 'terser',
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        // - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          antd: ['antd'],
+        },
+      },
+    },
+  },
 })

@@ -20,7 +20,7 @@ const Index = () => {
 
         doc.write('<html><head><title>Print</title>');
         // 需要在构建中
-        doc.write('<link href="/tailwind.css" rel="stylesheet">'); // JIT模式 
+        doc.write('<link href="/dist/tailwind-jit.css" rel="stylesheet">'); // JIT模式 
         doc.write('</head><body>');
         doc.write(printContent.innerHTML);
         doc.write('</body></html>');
