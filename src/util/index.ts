@@ -5,7 +5,9 @@ import path from 'path';
 const UTIL_DIR = process.cwd();
 const PROJECT_DIR = path.join(UTIL_DIR.split('src')[0]);
 const DIST_DIR = path.join(PROJECT_DIR, 'dist');
-const JIT_DIR = path.join(DIST_DIR, 'tailwind-jit.css');
+const PUBLIC_DIR = path.join(PROJECT_DIR, 'public');
+// const JIT_DIR = path.join(DIST_DIR, 'tailwind-jit.css');
+const JIT_DIR = path.join(PUBLIC_DIR, 'tailwind-jit.css');
 
 // /**
 //  * 检测指定文件是否存在于 public 目录中，如果不存在则执行指定命令
@@ -14,7 +16,7 @@ const JIT_DIR = path.join(DIST_DIR, 'tailwind-jit.css');
 //  * @returns {Promise<void>} 操作完成后的 Promise
 //  */
 export function checkPublicFileAndExec(filename: string, command: string) {
-    const validPath = `${DIST_DIR}/${filename}`;
+    const validPath = `${PUBLIC_DIR}/${filename}`;
 
     return new Promise((resolve, reject) => {
         if (fs.existsSync(validPath)) {

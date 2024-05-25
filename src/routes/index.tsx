@@ -1,6 +1,6 @@
 import React from "react";
 import BasicLayout from "@/layout";
-import { RouteObject, createBrowserRouter } from 'react-router-dom';
+import { RouteObject, createBrowserRouter, createHashRouter } from 'react-router-dom';
 import Home from "@/pages/Home";
 import Resume from "@/pages/ResumePage";
 import NoMatch from "@/pages/404";
@@ -11,7 +11,7 @@ const routes: RouteObject[] = [
     element: <BasicLayout />,
     children: [
       // { index: true, element: <Home /> },
-      { path: "/home", element: <Home /> },
+      { path: "home", element: <Home /> },
       {
         // path: "/resume",
         index: true,
@@ -22,6 +22,7 @@ const routes: RouteObject[] = [
   },
 ];
 
-const router = createBrowserRouter(routes)
+// createHashRouter
+const router = createHashRouter(routes)
 
 export default router;

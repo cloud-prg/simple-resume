@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import EditResumeModal from "./components/EditResumeModal";
 import { Button } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
-import { GITHUB_URL } from "@/constant";
+import { GITHUB_IO_URL, GITHUB_URL, isDev } from "@/constant";
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
@@ -18,9 +18,11 @@ const Index = () => {
         const printWindow = window.open('', '', 'width=800,height=600') as any;
         const doc = printWindow.document;
 
+        const jitHref = isDev ? "/tailwind-jit.css" : `${GITHUB_IO_URL}/tailwind-jit.css`;
+
         doc.write('<html><head><title>Print</title>');
         // 需要在构建中
-        doc.write('<link href="/dist/tailwind-jit.css" rel="stylesheet">'); // JIT模式 
+        doc.write(`<link href=${jitHref} rel="stylesheet">`); // JIT模式 
         doc.write('</head><body>');
         doc.write(printContent.innerHTML);
         doc.write('</body></html>');
