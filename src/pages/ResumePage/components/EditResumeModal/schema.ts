@@ -151,7 +151,7 @@ export default {
                                     widget: 'input',
                                     props: {
                                         style: {
-                                            width: '55vw'
+                                            width: '45vw'
                                         }
                                     },
                                     placeholder: '请输入工作内容'
@@ -177,7 +177,7 @@ export default {
                                     widget: 'input',
                                     props: {
                                         style: {
-                                            width: '55vw'
+                                            width: '45vw'
                                         }
                                     },
                                     placeholder: '请输入业绩'

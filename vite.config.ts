@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [react(),
   {
     name: 'generate-tailwind-css',
-    buildStart() {
+    buildEnd() {
       autoGenerateTailwindJIT()
     }
   }
