@@ -1,6 +1,6 @@
 import React from "react";
 import BasicLayout from "@/layout";
-import { BrowserRouter, Navigate, Outlet, RouteObject ,createBrowserRouter} from 'react-router-dom';
+import { RouteObject, createBrowserRouter } from 'react-router-dom';
 import Home from "@/pages/Home";
 import Resume from "@/pages/ResumePage";
 import NoMatch from "@/pages/404";

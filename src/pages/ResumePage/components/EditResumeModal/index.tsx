@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import FormRender, { useForm } from 'form-render';
 import schema from './schema';
 import { ResumeProps } from '@/types';

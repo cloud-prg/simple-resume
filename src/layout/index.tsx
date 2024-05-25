@@ -1,5 +1,4 @@
 import React from "react";
-import Header from "./components/Header";
 import styles from "./index.module.css";
 import { Outlet } from "react-router-dom";
 

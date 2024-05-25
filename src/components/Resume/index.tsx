@@ -4,8 +4,6 @@ import CareerSvg from '@/assets/career.svg'
 import EmailSvg from '@/assets/email.svg'
 import PhoneSvg from '@/assets/phone.svg'
 import LocationSvg from '@/assets/location.svg'
-
-import { usePDF } from 'react-to-pdf';
 interface IProps {
     contact: ContactType;
     education: EducationType;
