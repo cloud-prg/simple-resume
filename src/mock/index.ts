@@ -13,8 +13,8 @@ export const MOCK_EDUCATION: EducationType = {
     degree: "本科",
     major: "计算机科学与技术",
     school: "浙江大学",
-    startDate: "2001-09-01",
-    endDate: "2005-06-25",
+    startDate: "2001/09",
+    endDate: "2005/06",
 };
 
 export const MOCK_EXPERIENCE: ExperienceType[] = [
@@ -22,8 +22,8 @@ export const MOCK_EXPERIENCE: ExperienceType[] = [
         company: "Google",
         project: "Open AI",
         career: "AI工程师",
-        startDate: "2022-05-25",
-        endDate: "2024-05-25",
+        startDate: "2022/05",
+        endDate: "2024/05",
         keywords: ["Stable Diffusion", "Comfy UI"],
         workContent: [{value: "负责参与AI模型的开发和优化"}],
         summary: [{value:"项目正在积极开发中，具体工作内容和总结待补充"}]

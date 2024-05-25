@@ -77,6 +77,9 @@ export default {
                     title: '开始日期',
                     spanatype: 'string',
                     widget: 'datePicker',
+                    props: {
+                        format: 'YYYY/MM'
+                    },
                     // required: true,
                     placeholder: '请输入开始日期'
                 },
@@ -84,6 +87,9 @@ export default {
                     title: '结束日期',
                     spanatype: 'string',
                     widget: 'datePicker',
+                    props: {
+                        format: 'YYYY/MM'
+                    },
                     required: true,
                     placeholder: '请输入结束日期'
                 }
@@ -117,6 +123,9 @@ export default {
                         title: '开始日期',
                         type: 'string',
                         widget: 'datePicker',
+                        props: {
+                            format: 'YYYY/MM'
+                        },
 
                         placeholder: '请输入开始日期'
                     },
@@ -124,6 +133,9 @@ export default {
                         title: '结束日期',
                         type: 'string',
                         widget: 'datePicker',
+                        props: {
+                            format: 'YYYY/MM'
+                        },
 
                         placeholder: '请输入结束日期'
                     },
