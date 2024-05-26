@@ -1,4 +1,4 @@
-# Simple Resume
+# Introduction
 - Based on xRender, antd, react, tailwindcss
 - Easy to use, customize and deploy
 
