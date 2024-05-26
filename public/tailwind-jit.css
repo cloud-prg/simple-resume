@@ -671,15 +671,6 @@ video {
   border-color: rgb(209 213 219 / var(--tw-border-opacity));
 }
 
-.bg-gray-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
-}
-
-.bg-blue-white {
-  background-color: linear-gradient(to bottom right, blue, white);
-}
-
 .px-\[12px\] {
   padding-left: 12px;
   padding-right: 12px;
