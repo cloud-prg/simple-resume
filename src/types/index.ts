@@ -27,6 +27,7 @@ export type ExperienceType = Partial<{
 }>
 
 export interface ResumeProps {
+    name: string;
     contact: ContactType;
     education: EducationType;
     experience: ExperienceType[];

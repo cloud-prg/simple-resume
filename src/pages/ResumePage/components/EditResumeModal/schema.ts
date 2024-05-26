@@ -2,6 +2,16 @@ export default {
     displayType: 'row',
     column: 3,
     properties: {
+        name: {
+            type: 'string',
+            title: '模板名称',
+            widget: 'input',
+            required: true,
+            props: {
+                maxLength: 10
+            },
+            placeholder: '请输入模板名称'
+        },
         contact: {
             type: 'object',
             title: "联系方式",
