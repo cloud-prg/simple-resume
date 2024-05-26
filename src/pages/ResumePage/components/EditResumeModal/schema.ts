@@ -78,7 +78,8 @@ export default {
                     spanatype: 'string',
                     widget: 'datePicker',
                     props: {
-                        format: 'YYYY/MM'
+                        format: 'YYYY/MM',
+                        picker: "month"
                     },
                     // required: true,
                     placeholder: '请输入开始日期'
@@ -88,7 +89,8 @@ export default {
                     spanatype: 'string',
                     widget: 'datePicker',
                     props: {
-                        format: 'YYYY/MM'
+                        format: 'YYYY/MM',
+                        picker: "month"
                     },
                     required: true,
                     placeholder: '请输入结束日期'
@@ -124,7 +126,8 @@ export default {
                         type: 'string',
                         widget: 'datePicker',
                         props: {
-                            format: 'YYYY/MM'
+                            format: 'YYYY/MM',
+                            picker: "month"
                         },
 
                         placeholder: '请输入开始日期'
@@ -134,7 +137,8 @@ export default {
                         type: 'string',
                         widget: 'datePicker',
                         props: {
-                            format: 'YYYY/MM'
+                            format: 'YYYY/MM',
+                            picker: "month",
                         },
 
                         placeholder: '请输入结束日期'
