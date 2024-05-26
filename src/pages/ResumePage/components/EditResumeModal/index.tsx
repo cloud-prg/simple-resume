@@ -57,7 +57,7 @@ const Index: React.FC<IProps> = (props) => {
                     schema={schema}
                     onFinish={onFinish}
                     footer={false}
-                    labelWidth={90}
+                    labelWidth={100}
                     labelAlign='left'
                     widgets={{
                         keywordsList: KeywordsList

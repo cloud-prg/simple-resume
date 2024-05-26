@@ -50,7 +50,7 @@ const Index = () => {
                 <span className="text-3xl font-bold mb-[12px]">效果预览</span>
                 <GithubCorner href={GITHUB_URL} />
             </div>
-            <div ref={printRef} className="h-full w-full">
+            <div ref={printRef} className="h-full w-full overflow-scroll">
                 <Resume
                     {...resume}
                 />
