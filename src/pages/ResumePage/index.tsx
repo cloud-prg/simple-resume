@@ -42,16 +42,17 @@ const Index = () => {
         {/* sidebar */}
         <div className="flex flex-col gap-[24px] px-[12px] py-[8px] h-full w-[200px] border">
             {/* controller region */}
-            <div className="flex flex-col">
-                <span className="text-3xl font-bold mb-[12px]">编辑区</span>
+            <div className="flex flex-col gap-[12px]">
+                <span className="text-3xl font-bold">编辑区</span>
+                <span className="text-xs text-gray-400">⚠️:若点击打印简历无反应,请检查浏览器拦截或换用chrome</span>
                 <div className="flex flex-col gap-[10px]">
                     <EditResumeModal data={resume} onChange={setResume} >编辑简历</EditResumeModal>
                     <Button onClick={handlePrint} type="primary">打印简历</Button>
                 </div>
             </div>
             {/* template region */}
-            <div className="flex flex-col">
-                <span className="text-3xl font-bold mb-[12px]">参考模板</span>
+            <div className="flex flex-col gap-[12px]">
+                <span className="text-3xl font-bold">参考模板</span>
                 <div className="flex flex-col gap-[10px]">
                     {MOCK_RESUME_LIST.map((item, index) => {
                         return <div className={`${activeIndex === index? "bg-blue-white" : ""} flex items-center gap-[10px] hover:bg-gray-200 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
