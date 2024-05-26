@@ -16,7 +16,7 @@ const Index = () => {
 
         if (!printContent) return;
 
-        const printWindow = window.open('', '', 'width=800,height=600') as any;
+        const printWindow = window.open('', '', 'width=1200,height=900') as any;
         const doc = printWindow.document;
 
         const jitHref = isDev ? "/tailwind-jit.css" : `${GITHUB_IO_URL}/tailwind-jit.css`;
