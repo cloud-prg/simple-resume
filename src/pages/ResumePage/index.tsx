@@ -1,5 +1,5 @@
 import Resume from "@/components/Resume";
-import { MOCK_RESUME } from "@/mock";
+import { MOCK_RESUME, MOCK_RESUME_LIST } from "@/mock";
 import React, { useRef } from "react";
 import EditResumeModal from "./components/EditResumeModal";
 import { Button } from 'antd'
@@ -9,6 +9,7 @@ import { GITHUB_IO_URL, GITHUB_URL, isDev } from "@/constant";
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
     const [resume, setResume] = React.useState(MOCK_RESUME);
+    const [activeIndex, setActiveIndex] = React.useState(0);
 
     const handlePrint = async () => {
         const printContent = printRef.current;
@@ -38,13 +39,33 @@ const Index = () => {
 
 
     return <div className="h-screen w-full flex">
-        <div className="flex flex-col px-[12px] py-[8px] h-full border">
-            <span className="text-3xl font-bold mb-[12px]">编辑区</span>
-            <div className="flex flex-col items-center gap-[10px]">
-                <EditResumeModal data={resume} onChange={setResume} >编辑简历</EditResumeModal>
-                <Button onClick={handlePrint} type="primary">打印简历</Button>
+        {/* sidebar */}
+        <div className="flex flex-col gap-[24px] px-[12px] py-[8px] h-full w-[200px] border">
+            {/* controller region */}
+            <div className="flex flex-col">
+                <span className="text-3xl font-bold mb-[12px]">编辑区</span>
+                <div className="flex flex-col gap-[10px]">
+                    <EditResumeModal data={resume} onChange={setResume} >编辑简历</EditResumeModal>
+                    <Button onClick={handlePrint} type="primary">打印简历</Button>
+                </div>
+            </div>
+            {/* template region */}
+            <div className="flex flex-col">
+                <span className="text-3xl font-bold mb-[12px]">参考模板</span>
+                <div className="flex flex-col gap-[10px]">
+                    {MOCK_RESUME_LIST.map((item, index) => {
+                        return <div className={`${activeIndex === index? "bg-blue-white" : ""} flex items-center gap-[10px] hover:bg-gray-200 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
+                            setActiveIndex(index);
+                            setResume(item);
+                        }}>
+                            <span className="">{`模板 ${index + 1}`}</span>
+                            {activeIndex === index && <span className="text-xs text-primary-2">当前选择</span>}
+                        </div>
+                    })}
+                </div>
             </div>
         </div>
+        {/* content */}
         <div className="flex-1 flex flex-col px-[36px] py-[8px]">
             <div className="flex items-center justify-between">
                 <span className="text-3xl font-bold mb-[12px]">效果预览</span>
