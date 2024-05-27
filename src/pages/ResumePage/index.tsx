@@ -9,16 +9,16 @@ import { ResumeProps } from "@/types";
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
-    const localResumeList = JSON.parse(localStorage?.getItem?.('resumeList') || '');
-    const [resumeList, setResumeList] = React.useState<ResumeProps[]>(localResumeList || MOCK_RESUME_LIST);
+    const localResumeList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
+    const [resumeList, setResumeList] = React.useState<ResumeProps[]>(localResumeList.length > 0 ? localResumeList : MOCK_RESUME_LIST);
     const [activeIndex, setActiveIndex] = React.useState(0);
 
     const resume = useMemo(() => {
-        return resumeList[activeIndex]
+        return resumeList?.[activeIndex]
     }, [activeIndex, resumeList])
 
     React.useEffect(() => {
-        localStorage.setItem("resumeList", JSON.stringify(resumeList));
+        localStorage.setItem("resumeList", JSON?.stringify?.(resumeList));
     }, [resumeList])
 
     const handlePrint = async () => {
@@ -50,7 +50,7 @@ const Index = () => {
 
     const handleChange = (data: ResumeProps) => {
         setResumeList(prev => {
-            return prev.map((item, index) => {
+            return prev?.map?.((item, index) => {
                 if (index === activeIndex) {
                     return data;
                 }
@@ -75,7 +75,7 @@ const Index = () => {
             <div className="flex flex-col gap-[12px]">
                 <span className="text-3xl font-bold">历史记录</span>
                 <div className="flex flex-col gap-[10px]">
-                    {resumeList.map((item, index) => {
+                    {resumeList.length > 0 && resumeList?.map?.((item, index) => {
                         return <div className={`${activeIndex === index ? "bg-blue-white" : ""} flex items-center justify-between hover:bg-gray-200 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
                             setActiveIndex(index);
                             // setResume(item);
