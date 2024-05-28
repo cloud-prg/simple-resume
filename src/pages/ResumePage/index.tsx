@@ -2,24 +2,37 @@ import Resume from "@/components/Resume";
 import { MOCK_RESUME, MOCK_RESUME_LIST } from "@/mock";
 import React, { useMemo, useRef } from "react";
 import EditResumeModal from "./components/EditResumeModal";
-import { Button } from 'antd'
+import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
 import { GITHUB_IO_URL, GITHUB_URL, isDev } from "@/constant";
 import { ResumeProps } from "@/types";
+import { DeleteOutlined, DownloadOutlined, ExportOutlined, ImportOutlined } from "@ant-design/icons";
+import styles from './index.module.css'
+import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
+import { UploadChangeParam } from "antd/es/upload";
+import { flushSync } from "react-dom";
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
     const localResumeList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
     const [resumeList, setResumeList] = React.useState<ResumeProps[]>(localResumeList.length > 0 ? localResumeList : MOCK_RESUME_LIST);
     const [activeIndex, setActiveIndex] = React.useState(0);
+    const [triggerImport, setTriggerImport] = React.useState(false);
 
     const resume = useMemo(() => {
-        return resumeList?.[activeIndex]
+        return resumeList?.[activeIndex] || [];
     }, [activeIndex, resumeList])
 
     React.useEffect(() => {
         localStorage.setItem("resumeList", JSON?.stringify?.(resumeList));
     }, [resumeList])
+
+    React.useEffect(() => {
+        if (triggerImport) {
+            setActiveIndex(resumeList.length - 1)
+            setTriggerImport(false)
+        }
+    }, [triggerImport])
 
     const handlePrint = async () => {
         const printContent = printRef.current;
@@ -48,7 +61,7 @@ const Index = () => {
     };
 
 
-    const handleChange = (data: ResumeProps) => {
+    const handleEdit = (data: ResumeProps) => {
         setResumeList(prev => {
             return prev?.map?.((item, index) => {
                 if (index === activeIndex) {
@@ -59,6 +72,51 @@ const Index = () => {
         })
     }
 
+    const handleCreate = (data: ResumeProps) => {
+        flushSync(() => {
+            setResumeList(prev => {
+                const hasSameName = prev.filter(item => item.name === data.name).length > 0;
+                hasSameName && (data.name = `${data.name}(1)`)
+                return [...prev, data]
+            })
+            // setActiveIndex(resumeList.length - 1)
+        })
+    }
+
+    const handleDelete = (itemIndex: number) => {
+        if (activeIndex >= resumeList.length - 1) {
+            setActiveIndex(Math.max(0, resumeList.length - 2))
+        }
+
+        setResumeList(prev => {
+            const next = prev.filter((item, index) => {
+                return index !== itemIndex
+            })
+            return next
+        })
+
+        message.success('删除成功');
+    }
+
+    const handleExport = () => {
+        try {
+            exportJsonToTxt(resumeList[activeIndex], resumeList[activeIndex].name)
+            message.success('导出成功');
+        } catch (e) {
+            message.error('导出失败');
+        }
+    }
+
+    const handleUploadChange = async (e: UploadChangeParam<UploadFile>) => {
+        const { status } = e.file;
+        if (status === 'uploading') { return; }
+        const res: ResumeProps | string = await importJsonFromTxt(e);
+        if (typeof res === 'object') {
+            handleCreate(res);
+            setTriggerImport(true)
+        }
+    }
+
     return <div className="h-screen w-full flex">
         {/* sidebar */}
         <div className="flex flex-col gap-[24px] px-[12px] py-[8px] h-full w-[240px] border">
@@ -67,23 +125,78 @@ const Index = () => {
                 <span className="text-3xl font-bold">编辑区</span>
                 <span className="text-xs text-gray-400">⚠️:若点击打印简历无反应,请检查浏览器拦截或换用chrome</span>
                 <div className="flex flex-col gap-[10px]">
-                    <EditResumeModal data={resume} onChange={handleChange} >编辑简历</EditResumeModal>
+                    <EditResumeModal
+                        data={resume}
+                        onSuccess={() => {
+                            message.success('编辑已保存');
+                        }}
+                        onChange={handleEdit} >编辑简历</EditResumeModal>
                     <Button onClick={handlePrint} type="primary">打印简历</Button>
+                    <div onClick={handleExport} className={`flex items-center justify-center gap-[8px] text-[14px]
+                               cursor-pointer border border-dotted border-purple-400 text-purple-400
+                               hover:bg-purple-100 rounded-[4px] px-[8px] py-[4px]`}>
+                        <ExportOutlined />
+                        <span>导出Json</span>
+                    </div>
+                    <div className={`${styles['json-upload']} flex items-center justify-center gap-[8px] text-[14px]
+                               cursor-pointer border border-dotted border-purple-400 text-purple-400
+                               hover:bg-purple-100 rounded-[4px]`}>
+                        <Upload accept=".txt" action="" showUploadList={false} onChange={handleUploadChange}>
+                            <ImportOutlined />
+                            <span className="ml-[8px]">导入Json</span>
+                        </Upload>
+                    </div>
                 </div>
             </div>
             {/* template region */}
             <div className="flex flex-col gap-[12px]">
-                <span className="text-3xl font-bold">历史记录</span>
+                <span className="text-3xl font-bold">自定义模板</span>
                 <div className="flex flex-col gap-[10px]">
                     {resumeList.length > 0 && resumeList?.map?.((item, index) => {
-                        return <div className={`${activeIndex === index ? "bg-blue-white" : ""} flex items-center justify-between hover:bg-gray-200 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
+                        return <div className={`${styles['list-item']} ${activeIndex === index ? "border-primary-2" : ""} text-[14px] flex items-center justify-between hover:bg-gray-100 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
                             setActiveIndex(index);
-                            // setResume(item);
                         }}>
-                            <span className="">{item.name}</span>
-                            {activeIndex === index && <span className="text-xs text-primary-2">当前选择</span>}
+                            <span className={`${activeIndex === index && "text-primary-2"}`}>{item.name}</span>
+                            {
+                                resumeList.length > 1 &&
+                                <Popconfirm
+                                    title="删除模板"
+                                    description="确定删除该模板吗?"
+                                    getPopupContainer={(triggerNode: any) => {
+                                        return triggerNode.parentNode;
+                                    }}
+                                    onConfirm={(e) => {
+                                        e?.stopPropagation();
+                                        e?.preventDefault();
+                                        handleDelete(index)
+                                    }}
+                                    onCancel={(e) => {
+                                        e?.stopPropagation();
+                                        e?.preventDefault();
+                                    }}
+                                    okText="确定"
+                                    cancelText="取消"
+                                >
+                                    <DeleteOutlined className={`${styles['delete-icon']} text-[16px] text-gray-400 hover:text-red-500`} onClick={(e) => {
+                                        e?.stopPropagation();
+                                        e?.preventDefault();
+                                    }} />
+                                </Popconfirm>
+                            }
                         </div>
                     })}
+
+                    <EditResumeModal mode='create' data={resume}
+                        onSuccess={() => {
+                            message.success('创建成功');
+                        }}
+                        onChange={handleCreate} >
+                        <div className={`flex items-center justify-center text-[14px]
+                               cursor-pointer border border-dotted border-primary-2 text-primary-2
+                               hover:bg-primary-bg rounded-[4px] px-[8px] py-[4px]`}>
+                            <span>+ 新建模板</span>
+                        </div>
+                    </EditResumeModal>
                 </div>
             </div>
         </div>
@@ -100,7 +213,7 @@ const Index = () => {
             </div>
         </div>
 
-    </div>
+    </div >
 }
 
 export default Index;

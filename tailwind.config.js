@@ -19,6 +19,7 @@ export default {
         'primary-2': '#163bbf',
         'primary-3': '#3f3cbb',
         'primary-4': 'rgb(196, 47, 13)',
+        'primary-bg': '#163bbf17',
         'grey-2': 'rgba(0, 0, 0, 0.7)',
         'grey-1': 'rgba(0, 0, 0, 0.75)',
       },

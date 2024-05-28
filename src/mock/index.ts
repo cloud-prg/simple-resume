@@ -201,7 +201,7 @@ export const MOCK_EXPERIENCE_4: ExperienceType[] = [
 ];
 
 export const MOCK_RESUME: ResumeProps = {
-    name: '模板',
+    name: '默认模板',
     contact: MOCK_CONTACT,
     education: MOCK_EDUCATION,
     experience: MOCK_EXPERIENCE,
@@ -236,10 +236,13 @@ export const MOCK_RESUME_4: ResumeProps = {
     experience: MOCK_EXPERIENCE_4,
 };
 
-export const MOCK_RESUME_LIST: ResumeProps[] = [
-    MOCK_RESUME,
+export const MOCK_TEMPLATE_LIST: ResumeProps[] = [
     MOCK_RESUME_1,
     MOCK_RESUME_2,
     MOCK_RESUME_3,
     MOCK_RESUME_4,
 ].map(item=>({...item, name: item.experience[0].company + item.name}));
+
+export const MOCK_RESUME_LIST: ResumeProps[] = [
+    MOCK_RESUME,
+]
