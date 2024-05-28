@@ -1,5 +1,5 @@
 import { ContactType, EducationType, ExperienceType } from '@/types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import CareerSvg from '@/assets/career.svg'
 import EmailSvg from '@/assets/email.svg'
 import PhoneSvg from '@/assets/phone.svg'
@@ -24,6 +24,21 @@ const Index: React.FC<IProps> = (props) => {
             <span>{text}</span>
         </div>
     }
+
+    const filterExperience = useMemo(()=>{
+        const res = props.experience.map((item) => {
+            let {  workContent, summary } = item;
+            workContent = workContent?.filter((item) => item.value && item?.value !== '');
+            summary = summary?.filter((item) => item.value && item?.value !== '');
+
+            return {
+                ...item,
+                workContent,
+                summary
+            }
+        })
+        return res;
+    },[props.experience])
 
     /**
      * UI 规范：
@@ -55,7 +70,7 @@ const Index: React.FC<IProps> = (props) => {
         {/* Experience */}
         <div className='flex flex-col'>
             <span className='text-3xl font-bold mb-[12px]'>工作经历</span>
-            {props.experience.map((item) => {
+            {filterExperience.map((item) => {
                 const { company, project, career, startDate, endDate, keywords, workContent, summary } = item;
                 return <div key={company} className='flex flex-col mb-[24px]'>
                     {/* Title */}
