@@ -61,6 +61,7 @@ const Index: React.FC<IProps> = (props) => {
                     {/* Title */}
                     <div className='text-2xl flex justify-between items-center'>
                         <div className='flex items-center gap-[8px] font-bold text-grey-2'>
+                            <span>{company}</span>
                             <span>{project}</span>
                             <span>{career}</span>
                         </div>
@@ -74,23 +75,27 @@ const Index: React.FC<IProps> = (props) => {
                         </div>
                     </div>
                     {/* Content */}
-                    <div className='flex flex-col mb-[12px]'>
-                        <span className='text-xl font-bold text-grey-2 mb-[6px]'>工作内容:</span>
-                        <ul className='list-disc list-inside flex flex-col gap-[4px]'>
-                            {workContent?.map((item,index) => {
-                                return <li key={index} className='text-base text-grey-2'>{item.value}</li>
-                            })}
-                        </ul>
-                    </div>
+                    {
+                        workContent && workContent.length > 0 && <div className='flex flex-col mb-[12px]'>
+                            <span className='text-xl font-bold text-grey-2 mb-[6px]'>工作内容:</span>
+                            <ul className='list-disc list-inside flex flex-col gap-[4px]'>
+                                {workContent?.map((item, index) => {
+                                    return <li key={index} className='text-base text-grey-2'>{item.value}</li>
+                                })}
+                            </ul>
+                        </div>
+                    }
                     {/* Summary */}
-                    <div className='flex flex-col'>
-                        <span className='text-xl font-bold text-grey-2 mb-[6px]'>业绩:</span>
-                        <ul className='list-disc list-inside'>
-                            {summary?.map((item,index) => {
-                                return <li key={index} className='text-base text-grey-2'>{item.value}</li>
-                            })}
-                        </ul>
-                    </div>
+                    {
+                        summary && summary.length > 0 && <div className='flex flex-col'>
+                            <span className='text-xl font-bold text-grey-2 mb-[6px]'>业绩:</span>
+                            <ul className='list-disc list-inside'>
+                                {summary?.map((item, index) => {
+                                    return <li key={index} className='text-base text-grey-2'>{item.value}</li>
+                                })}
+                            </ul>
+                        </div>
+                    }
                 </div>
             })}
         </div>
