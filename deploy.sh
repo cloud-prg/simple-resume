@@ -3,10 +3,8 @@
 # 确保脚本抛出遇到的错误
 set -e
 
-echo ">>>> 当前目录 $(pwd)"
 # 进入生成的文件夹
 cd ./dist
-echo ">>> dist目录 $(pwd)"
 
 git init
 git add -A
