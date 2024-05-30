@@ -6,6 +6,7 @@ import PhoneSvg from '@/assets/phone.svg'
 import LocationSvg from '@/assets/location.svg'
 interface IProps {
     contact: ContactType;
+    skills?: { value: string }[];
     education: EducationType;
     experience: ExperienceType[];
     ref?: React.RefObject<any>;
@@ -25,9 +26,16 @@ const Index: React.FC<IProps> = (props) => {
         </div>
     }
 
-    const filterExperience = useMemo(()=>{
+    const filterSkills = useMemo(() => {
+        const res = props?.skills?.filter?.((item) => {
+            return typeof item.value === 'string' && item.value
+        })
+        return res;
+    }, [props.skills])
+
+    const filterExperience = useMemo(() => {
         const res = props.experience.map((item) => {
-            let {  workContent, summary } = item;
+            let { workContent, summary } = item;
             workContent = workContent?.filter((item) => item.value && item?.value !== '');
             summary = summary?.filter((item) => item.value && item?.value !== '');
 
@@ -38,13 +46,13 @@ const Index: React.FC<IProps> = (props) => {
             }
         })
         return res;
-    },[props.experience])
+    }, [props.experience])
 
     /**
-     * UI 规范：
-     * - 文字大小：名字5xl 大标题3xl 标题2xl 标题xl 
-     * - 间距：大模块24px 小模块12px 子标题与子内容6px
-    */
+    * UI 规范：
+    * - 文字大小：名字5xl 大标题3xl 标题2xl 标题xl 
+    * - 间距：大模块24px 小模块12px 子标题与子内容6px
+   */
     return <div className="flex flex-col w-full  gap-[24px] text-2xl text-grey-1 rounded-md">
         {/* Contact */}
         <div className='flex flex-col'>
@@ -56,6 +64,16 @@ const Index: React.FC<IProps> = (props) => {
                 <ContactItem icon={LocationSvg} text={location} />
             </div>
         </div>
+
+        {/* Skills */}
+        {!!filterSkills?.length && <div className='flex flex-col'>
+            <span className='text-3xl font-bold mb-[12px]'>专业技能</span>
+            <ul className='list-disc list-inside flex flex-col gap-[4px]'>
+                {filterSkills?.map?.((item, index) => {
+                    return <li key={index} className='text-lg text-grey-2'>{item.value}</li>
+                })}
+            </ul>
+        </div>}
 
         {/* Education */}
         <div className='flex flex-col'>
@@ -71,10 +89,10 @@ const Index: React.FC<IProps> = (props) => {
         <div className='flex flex-col'>
             <span className='text-3xl font-bold mb-[12px]'>工作经历</span>
             {filterExperience.map((item) => {
-                const { company, project, career, startDate, endDate, keywords, workContent, summary } = item;
-                return <div key={company} className='flex flex-col mb-[24px]'>
+                const { company, project, career, startDate, endDate, keywords, description, workContent, summary } = item;
+                return <div key={project} className='flex flex-col mb-[24px]'>
                     {/* Title */}
-                    <div className='text-2xl flex justify-between items-center'>
+                    <div className='text-2xl flex justify-between items-center mb-[6px]'>
                         <div className='flex items-center gap-[8px] font-bold text-grey-2'>
                             <span>{company}</span>
                             <span>{project}</span>
@@ -82,10 +100,20 @@ const Index: React.FC<IProps> = (props) => {
                         </div>
                         <div>{`${startDate}-${endDate}`}</div>
                     </div>
+
+                    {/* Description  */}
+                    {description &&
+                        <div className='text-2xl text-lg flex items-start gap-[4px] mb-[6px]'>
+                            <span className='w-[80px] font-bold text-grey-2'>项目描述:</span>
+                            <div className='flex-1 item-center gap-[4px]'>
+                                <span className='text-base text-grey-2'>{description}</span>
+                            </div>
+                        </div>
+                    }
                     {/* Keywords */}
-                    <div className='text-2xl text-lg flex items-center gap-[4px] mb-[12px]'>
+                    <div className='text-2xl text-lg flex items-center gap-[4px] mb-[6px]'>
                         <span className='font-bold text-grey-2'>技术栈:</span>
-                        <div className='flex item-center gap-[4px]'>
+                        <div className='flex-1 item-center gap-[4px]'>
                             <span className='text-base text-grey-2'>{keywords?.join(' , ')}</span>
                         </div>
                     </div>

@@ -92,6 +92,7 @@ export const MOCK_EXPERIENCE: ExperienceType[] = [
         career: "AI工程师",
         startDate: "2022/05",
         endDate: "2024/05",
+        description: "这是一个默认模板，请根据需要修改",
         keywords: ["Stable Diffusion", "Comfy UI", "Machine Learning", "Deep Learning"],
         workContent: [
             { value: "负责参与AI模型的开发和优化" },
@@ -202,6 +203,12 @@ export const MOCK_EXPERIENCE_4: ExperienceType[] = [
 
 export const MOCK_RESUME: ResumeProps = {
     name: '默认模板',
+    skills: [{
+        value: 'JavaScript高级掌握者',
+    },
+    {
+        value: 'TS高级掌握者',
+    }],
     contact: MOCK_CONTACT,
     education: MOCK_EDUCATION,
     experience: MOCK_EXPERIENCE,
@@ -241,7 +248,7 @@ export const MOCK_TEMPLATE_LIST: ResumeProps[] = [
     MOCK_RESUME_2,
     MOCK_RESUME_3,
     MOCK_RESUME_4,
-].map(item=>({...item, name: item.experience[0].company + item.name}));
+].map(item => ({ ...item, name: item.experience[0].company + item.name }));
 
 export const MOCK_RESUME_LIST: ResumeProps[] = [
     MOCK_RESUME,

@@ -21,6 +21,7 @@ export type ExperienceType = Partial<{
     career: string;
     startDate: string;
     endDate: string;
+    description?: string;
     keywords: string[];
     workContent: { value: string }[];
     summary: { value: string }[];
@@ -28,6 +29,7 @@ export type ExperienceType = Partial<{
 
 export interface ResumeProps {
     name: string;
+    skills?: { value: string }[];
     contact: ContactType;
     education: EducationType;
     experience: ExperienceType[];

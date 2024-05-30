@@ -1,17 +1,16 @@
 .list-item {
-    .delete-icon {
+    .delete-icon,.copy-icon {
         opacity: 0;
     }
 
     &:hover {
-        .delete-icon {
+        .delete-icon,.copy-icon {
             opacity: 1;
         }
     }
 }
 
 .json-upload {
-
     :global(.ant-upload-wrapper) {
         width: 100%;
         height: 100%;

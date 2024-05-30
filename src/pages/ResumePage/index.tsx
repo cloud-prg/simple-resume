@@ -6,7 +6,7 @@ import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
 import { GITHUB_IO_URL, GITHUB_URL, isDev } from "@/constant";
 import { ResumeProps } from "@/types";
-import { DeleteOutlined, DownloadOutlined, ExportOutlined, ImportOutlined } from "@ant-design/icons";
+import { CopyOutlined, DeleteOutlined, DownloadOutlined, ExportOutlined, ImportOutlined } from "@ant-design/icons";
 import styles from './index.module.css'
 import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
 import { UploadChangeParam } from "antd/es/upload";
@@ -60,7 +60,6 @@ const Index = () => {
         };
     };
 
-
     const handleEdit = (data: ResumeProps) => {
         setResumeList(prev => {
             return prev?.map?.((item, index) => {
@@ -76,8 +75,9 @@ const Index = () => {
         flushSync(() => {
             setResumeList(prev => {
                 const hasSameName = prev.filter(item => item.name === data.name).length > 0;
-                hasSameName && (data.name = `${data.name}(1)`)
-                return [...prev, data]
+                const _data = Object.assign({}, data);
+                hasSameName && (_data.name = `${data.name}(1)`)
+                return [...prev, _data]
             })
             // setActiveIndex(resumeList.length - 1)
         })
@@ -96,6 +96,12 @@ const Index = () => {
         })
 
         message.success('删除成功');
+    }
+
+    const handleCopy = (data: ResumeProps) => {
+        handleCreate(data);
+        setTriggerImport(true)
+        message.success('复制成功');
     }
 
     const handleExport = () => {
@@ -132,12 +138,6 @@ const Index = () => {
                         }}
                         onChange={handleEdit} >编辑简历</EditResumeModal>
                     <Button onClick={handlePrint} type="primary">打印简历</Button>
-                    <div onClick={handleExport} className={`flex items-center justify-center gap-[8px] text-[14px]
-                               cursor-pointer border border-dotted border-purple-400 text-purple-400
-                               hover:bg-purple-100 rounded-[4px] px-[8px] py-[4px]`}>
-                        <ExportOutlined />
-                        <span>导出Json</span>
-                    </div>
                     <div className={`${styles['json-upload']} flex items-center justify-center gap-[8px] text-[14px]
                                cursor-pointer border border-dotted border-purple-400 text-purple-400
                                hover:bg-purple-100 rounded-[4px]`}>
@@ -146,6 +146,12 @@ const Index = () => {
                             <span className="ml-[8px]">导入Json</span>
                         </Upload>
                     </div>
+                    <div onClick={handleExport} className={`flex items-center justify-center gap-[8px] text-[14px]
+                               cursor-pointer border border-dotted border-purple-400 text-white
+                               hover:bg-purple-400 bg-purple-500 rounded-[4px] px-[8px] py-[4px]`}>
+                        <ExportOutlined />
+                        <span>导出Json</span>
+                    </div>
                 </div>
             </div>
             {/* template region */}
@@ -153,39 +159,48 @@ const Index = () => {
                 <span className="text-3xl font-bold">自定义模板</span>
                 <div className="flex flex-col gap-[10px]">
                     {resumeList.length > 0 && resumeList?.map?.((item, index) => {
-                        return <div className={`${styles['list-item']} ${activeIndex === index ? "border-primary-2" : ""} text-[14px] flex items-center justify-between hover:bg-gray-100 cursor-pointer border border-gray-300 rounded-[4px] px-[8px] py-[4px]`} key={index} onClick={() => {
-                            setActiveIndex(index);
-                        }}>
+                        return <div className={`${styles['list-item']} ${activeIndex === index ? "border-primary-2" : ""} text-[14px] 
+                        flex items-center justify-between 
+                        hover:bg-gray-100 cursor-pointer border 
+                        border-gray-300 rounded-[4px] px-[8px] py-[4px]`}
+                            key={index}
+                            onClick={() => {
+                                setActiveIndex(index);
+                            }}
+                        >
                             <span className={`${activeIndex === index && "text-primary-2"}`}>{item.name}</span>
-                            {
-                                resumeList.length > 1 &&
-                                <Popconfirm
-                                    title="删除模板"
-                                    description="确定删除该模板吗?"
-                                    getPopupContainer={(triggerNode: any) => {
-                                        return triggerNode.parentNode;
-                                    }}
-                                    onConfirm={(e) => {
-                                        e?.stopPropagation();
-                                        e?.preventDefault();
-                                        handleDelete(index)
-                                    }}
-                                    onCancel={(e) => {
-                                        e?.stopPropagation();
-                                        e?.preventDefault();
-                                    }}
-                                    okText="确定"
-                                    cancelText="取消"
-                                >
-                                    <DeleteOutlined className={`${styles['delete-icon']} text-[16px] text-gray-400 hover:text-red-500`} onClick={(e) => {
-                                        e?.stopPropagation();
-                                        e?.preventDefault();
-                                    }} />
-                                </Popconfirm>
-                            }
+                            <div className="flex items-center gap-[8px]">
+                                <CopyOutlined className={`${styles['copy-icon']} text-[16px] text-gray-400 hover:text-blue-500`} onClick={() => handleCopy(item)} />
+                                {
+                                    resumeList.length > 1 &&
+                                    <Popconfirm
+                                        title="删除模板"
+                                        description="确定删除该模板吗?"
+                                        getPopupContainer={(triggerNode: any) => {
+                                            return triggerNode.parentNode;
+                                        }}
+                                        onConfirm={(e) => {
+                                            e?.stopPropagation();
+                                            e?.preventDefault();
+                                            handleDelete(index)
+                                        }}
+                                        onCancel={(e) => {
+                                            e?.stopPropagation();
+                                            e?.preventDefault();
+                                        }}
+                                        okText="确定"
+                                        cancelText="取消"
+                                    >
+                                        <DeleteOutlined className={`${styles['delete-icon']} text-[16px] text-gray-400 hover:text-red-500`} onClick={(e) => {
+                                            e?.stopPropagation();
+                                            e?.preventDefault();
+                                        }} />
+                                    </Popconfirm>
+                                }
+                            </div>
+
                         </div>
                     })}
-
                     <EditResumeModal mode='create' data={resume}
                         onSuccess={() => {
                             message.success('创建成功');

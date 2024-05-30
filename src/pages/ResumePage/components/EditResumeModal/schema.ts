@@ -12,6 +12,29 @@ export default {
             },
             placeholder: '请输入模板名称'
         },
+        skills: {
+            title: '专业技能',
+            type: 'array',
+            widget: 'simpleList',
+            props: {
+                hasBackground: true,
+            },
+            items: {
+                type: 'object',
+                properties: {
+                    value: {
+                        type: 'string',
+                        widget: 'input',
+                        props: {
+                            style: {
+                                width: '45vw'
+                            }
+                        },
+                        placeholder: '请输入技能描述'
+                    }
+                }
+            }
+        },
         contact: {
             type: 'object',
             title: "联系方式",
@@ -154,9 +177,17 @@ export default {
                         placeholder: '请输入结束日期'
                     },
                     keywords: {
+                        column: 1,
                         title: '关键词',
                         type: 'array',
                         widget: 'keywordsList',
+                    },
+                    description: {
+                        column: 1,
+                        type: 'string',
+                        title: '项目描述',
+                        widget: 'textArea',
+                        placeholder: '请输入项目描述'
                     },
                     workContent: {
                         title: '工作内容',
@@ -164,7 +195,6 @@ export default {
                         widget: 'simpleList',
                         style: {
                             width: '600px',
-                            border: '1px solid red'
                         },
                         props: {
                             hasBackground: true,
@@ -191,9 +221,6 @@ export default {
                         widget: 'simpleList',
                         props: {
                             hasBackground: true,
-                            style: {
-                                border: '1px solid red'
-                            }
                         },
                         items: {
                             type: 'object',
