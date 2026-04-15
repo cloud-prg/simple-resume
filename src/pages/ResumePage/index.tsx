@@ -5,7 +5,8 @@ import EditResumeModal from "./components/EditResumeModal";
 import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
 import { GITHUB_URL } from "@/constant";
-import resumePrintCssUrl from '@/components/Resume/resume-print.css?url';
+/** 与 Resume 使用的 index.module.css 同源，编译后带 hash 的类名与 innerHTML 一致，用于打印窗口内联注入 */
+import resumeCssForPrint from '@/components/Resume/index.module.css?inline';
 import { ResumeProps } from "@/types";
 import { DeleteOutlined, DownloadOutlined, ExportOutlined, ImportOutlined } from "@ant-design/icons";
 import styles from './index.module.css'
@@ -51,34 +52,21 @@ const Index = () => {
 
         const doc = printWindow.document;
         const baseHref = new URL(import.meta.env.BASE_URL || '/', window.location.origin).href;
-        const resumeCssHref = new URL(resumePrintCssUrl, window.location.href).href;
 
         doc.open();
         doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>打印简历</title>');
         doc.write(`<base href="${baseHref}">`);
-        doc.write(`<link rel="stylesheet" href="${resumeCssHref}">`);
+        doc.write(`<style type="text/css" data-resume-print>${resumeCssForPrint}</style>`);
         doc.write('</head><body style="margin:0">');
         doc.write(printContent.innerHTML);
         doc.write('</body></html>');
         doc.close();
 
-        let printed = false;
-        const runPrintOnce = () => {
-            if (printed) return;
-            printed = true;
+        printWindow.requestAnimationFrame(() => {
             printWindow.focus();
             printWindow.print();
             printWindow.close();
-        };
-
-        const link = doc.querySelector('link[rel="stylesheet"]') as HTMLLinkElement | null;
-        if (link) {
-            link.addEventListener('load', runPrintOnce);
-            link.addEventListener('error', runPrintOnce);
-            window.setTimeout(runPrintOnce, 1500);
-        } else {
-            window.setTimeout(runPrintOnce, 0);
-        }
+        });
     };
 
 
