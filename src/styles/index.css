@@ -1,10 +1,12 @@
+@import "./theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
     --header-height: 0;
-    --primary: #0077cc;
+    --primary: var(--sr-color-primary);
 }
 
 /* form-render simpleList 默认 inline-block，在弹窗里会挤在左侧；改为占满表单项宽度 */
@@ -29,4 +31,207 @@
 .resume-edit-form .fr-list-simple .fr-list-item .ant-input,
 .resume-edit-form .fr-list-simple .fr-list-item textarea.ant-input {
     max-width: 100%;
+}
+
+/* form-render 列表灰底在深色弹窗里会显「一块亮斑」且易与右侧留白混淆 */
+html[data-theme="dark"] .resume-edit-form .fr-list-simple-background {
+    background-color: var(--sr-surface-muted) !important;
+    border: 1px solid var(--sr-border);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+html[data-theme="sepia"] .resume-edit-form .fr-list-simple-background {
+    background-color: color-mix(in srgb, var(--sr-surface-muted) 96%, var(--sr-border)) !important;
+    border: 1px solid var(--sr-border);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+/*
+ * 深色：编辑弹窗里个人信息 / 教育经历等仍为白底
+ * AntD css-in-js 与 Modal 挂到 body 后选择器顺序不定，这里用 .ant-modal 提高命中并双写 .resume-edit-form
+ */
+html[data-theme="dark"] .ant-modal .resume-edit-form,
+html[data-theme="dark"] .resume-edit-form {
+    /* 让 Input 等组件读到的 alias 变量在表单子树内就是深色底（antd 5.x 常用变量名） */
+    --ant-color-bg-container: #15121c;
+    --ant-color-fill-tertiary: #1f1b2a;
+    --ant-color-fill-secondary: #242030;
+    --ant-color-fill-alter: #1f1b2a;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-card,
+html[data-theme="dark"] .resume-edit-form .ant-card,
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-card.ant-card,
+html[data-theme="dark"] .resume-edit-form .fr-obj-card.ant-card {
+    background: var(--sr-surface-muted) !important;
+    border-color: var(--sr-border) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-card .ant-card-head,
+html[data-theme="dark"] .resume-edit-form .ant-card .ant-card-head {
+    background: var(--sr-surface-muted) !important;
+    border-color: var(--sr-border) !important;
+    color: var(--sr-text-primary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-card .ant-card-body,
+html[data-theme="dark"] .resume-edit-form .ant-card .ant-card-body {
+    background: var(--sr-surface-muted) !important;
+}
+
+/*
+ * form-render 默认 object → Collapse（.fr-obj-collapse），其样式把折叠头写死为 #fff
+ * 个人信息 / 教育经历走的就是这个组件，必须单独覆盖
+ */
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse {
+    border-color: var(--sr-border) !important;
+    background: var(--sr-surface-muted) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-item,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .ant-collapse-item,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-item,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .ant-collapse-item {
+    border-color: var(--sr-border) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-header,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .ant-collapse-header,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-header,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .ant-collapse-header {
+    background-color: var(--sr-surface-muted) !important;
+    color: var(--sr-text-primary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-content,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .ant-collapse-content,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-content,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .ant-collapse-content {
+    background: var(--sr-surface-muted) !important;
+    border-top: 1px solid var(--sr-border) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-content-box,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .ant-collapse-content-box,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .ant-collapse-content-box,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .ant-collapse-content-box {
+    background: var(--sr-surface-muted) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .collapse-title,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .collapse-title,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .collapse-title,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .collapse-title {
+    color: var(--sr-text-primary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .fr-header-desc,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .fr-header-desc,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .fr-header-desc,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .fr-header-desc {
+    color: var(--sr-text-muted) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .header-item-label,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .header-item-label,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .header-item-label,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .header-item-label {
+    color: var(--sr-text-primary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .header-item-label span,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .header-item-label span,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .header-item-label span,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .header-item-label span {
+    color: var(--sr-text-secondary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .expand-icon-box,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .expand-icon-box,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .expand-icon-box,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .expand-icon-box {
+    color: var(--sr-text-secondary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-obj-collapse .tag-no-data,
+html[data-theme="dark"] .resume-edit-form .fr-obj-collapse .tag-no-data,
+html[data-theme="sepia"] .ant-modal .resume-edit-form .fr-obj-collapse .tag-no-data,
+html[data-theme="sepia"] .resume-edit-form .fr-obj-collapse .tag-no-data {
+    color: var(--sr-text-secondary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .fr-header-desc,
+html[data-theme="dark"] .resume-edit-form .fr-header-desc {
+    color: var(--sr-text-muted) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input,
+html[data-theme="dark"] .resume-edit-form .ant-input,
+html[data-theme="dark"] .ant-modal .resume-edit-form textarea.ant-input,
+html[data-theme="dark"] .resume-edit-form textarea.ant-input,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-affix-wrapper,
+html[data-theme="dark"] .resume-edit-form .ant-input-affix-wrapper,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-outlined,
+html[data-theme="dark"] .resume-edit-form .ant-input-outlined,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-number,
+html[data-theme="dark"] .resume-edit-form .ant-input-number,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-number .ant-input-number-input,
+html[data-theme="dark"] .resume-edit-form .ant-input-number .ant-input-number-input,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-select:not(.ant-select-disabled) .ant-select-selector,
+html[data-theme="dark"] .resume-edit-form .ant-select:not(.ant-select-disabled) .ant-select-selector,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-picker,
+html[data-theme="dark"] .resume-edit-form .ant-picker,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-cascader-picker .ant-select-selector,
+html[data-theme="dark"] .resume-edit-form .ant-cascader-picker .ant-select-selector {
+    background-color: var(--sr-surface-muted) !important;
+    background: var(--sr-surface-muted) !important;
+    color: var(--sr-text-primary) !important;
+    border-color: var(--sr-border) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-picker .ant-picker-input > input,
+html[data-theme="dark"] .resume-edit-form .ant-picker .ant-picker-input > input {
+    background: transparent !important;
+    color: var(--sr-text-primary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-affix-wrapper .ant-input,
+html[data-theme="dark"] .resume-edit-form .ant-input-affix-wrapper .ant-input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input::placeholder,
+html[data-theme="dark"] .resume-edit-form .ant-input::placeholder,
+html[data-theme="dark"] .ant-modal .resume-edit-form textarea.ant-input::placeholder,
+html[data-theme="dark"] .resume-edit-form textarea.ant-input::placeholder,
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-select-selection-placeholder,
+html[data-theme="dark"] .resume-edit-form .ant-select-selection-placeholder {
+    color: var(--sr-text-muted) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-number-handler-wrap,
+html[data-theme="dark"] .resume-edit-form .ant-input-number-handler-wrap {
+    background: var(--sr-surface-muted) !important;
+    border-color: var(--sr-border) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-input-number-handler,
+html[data-theme="dark"] .resume-edit-form .ant-input-number-handler {
+    border-color: var(--sr-border) !important;
+    color: var(--sr-text-secondary) !important;
+}
+
+html[data-theme="dark"] .ant-modal .resume-edit-form .ant-color-picker-trigger,
+html[data-theme="dark"] .resume-edit-form .ant-color-picker-trigger {
+    background: var(--sr-surface-muted) !important;
+    border-color: var(--sr-border) !important;
 }

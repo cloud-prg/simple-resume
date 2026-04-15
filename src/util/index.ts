@@ -4,7 +4,6 @@ import path from 'path';
 
 const UTIL_DIR = process.cwd();
 const PROJECT_DIR = path.join(UTIL_DIR.split('src')[0]);
-const DIST_DIR = path.join(PROJECT_DIR, 'dist');
 const PUBLIC_DIR = path.join(PROJECT_DIR, 'public');
 // const JIT_DIR = path.join(DIST_DIR, 'tailwind-jit.css');
 const JIT_DIR = path.join(PUBLIC_DIR, 'tailwind-jit.css');

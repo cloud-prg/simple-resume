@@ -27,7 +27,7 @@ const listItemLong = {
     },
 };
 
-export default {
+const resumeFormSchema = {
     displayType: "row",
     column: 3,
     properties: {
@@ -38,6 +38,38 @@ export default {
             required: true,
             props: { maxLength: 24 },
             placeholder: "用于侧栏区分多份简历",
+        },
+        theme: {
+            type: "object",
+            title: "版式与主题",
+            properties: {
+                headerLayout: {
+                    title: "页眉个人信息对齐",
+                    type: "string",
+                    widget: "select",
+                    enum: ["left", "center", "right"],
+                    enumNames: ["居左", "居中", "居右"],
+                    default: "center",
+                },
+                heading1Color: {
+                    title: "一级标题色（姓名）",
+                    type: "string",
+                    widget: "colorHex",
+                    default: "#0f172a",
+                },
+                heading2Color: {
+                    title: "二级标题色（分块标题）",
+                    type: "string",
+                    widget: "colorHex",
+                    default: "#111827",
+                },
+                heading3Color: {
+                    title: "三级标题色（子标题/强调）",
+                    type: "string",
+                    widget: "colorHex",
+                    default: "#1e40af",
+                },
+            },
         },
         contact: {
             type: "object",
@@ -247,3 +279,46 @@ export default {
         },
     },
 };
+
+/** 表单 schema 顶层字段（与预览点击映射一致） */
+export type ResumeFormRootKey =
+    | "name"
+    | "theme"
+    | "contact"
+    | "education"
+    | "workHistory"
+    | "projectExperience"
+    | "skills";
+
+const ROOT_KEYS = new Set<string>([
+    "name",
+    "theme",
+    "contact",
+    "education",
+    "workHistory",
+    "projectExperience",
+    "skills",
+]);
+
+/** 将表单字段路径映射为 schema 顶层 key；无法识别时返回 null（展示完整表单） */
+export function formPathToRootKey(path?: string): ResumeFormRootKey | null {
+    if (!path || typeof path !== "string") return null;
+    const head = path.split(".")[0];
+    if (ROOT_KEYS.has(head)) return head as ResumeFormRootKey;
+    return null;
+}
+
+/** 仅保留某一顶层区块的 schema，供「点预览局部编辑」使用 */
+export function pickResumeFormRootSection(rootKey: ResumeFormRootKey | null) {
+    if (!rootKey) return resumeFormSchema;
+    const props = resumeFormSchema.properties as Record<string, unknown>;
+    const fragment = props[rootKey];
+    if (!fragment) return resumeFormSchema;
+    return {
+        displayType: resumeFormSchema.displayType,
+        column: resumeFormSchema.column,
+        properties: { [rootKey]: JSON.parse(JSON.stringify(fragment)) },
+    };
+}
+
+export default resumeFormSchema;

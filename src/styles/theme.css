@@ -1,0 +1,150 @@
+/* 全局外观令牌：由 document.documentElement 的 data-theme 切换（light / sepia / dark） */
+
+:root {
+    --sr-app-bg: #f1f5f9;
+    --sr-surface: #ffffff;
+    --sr-surface-muted: #f8fafc;
+    --sr-text-primary: #0f172a;
+    --sr-text-secondary: #475569;
+    --sr-text-muted: #64748b;
+    --sr-border: #e2e8f0;
+    --sr-border-strong: #cbd5e1;
+    --sr-color-primary: #2563eb;
+    --sr-color-primary-hover: #1d4ed8;
+    --sr-focus-ring: rgba(37, 99, 235, 0.35);
+    --resume-h1: #0f172a;
+    --resume-h2: #111827;
+    --resume-h3: #1d4ed8;
+    --resume-text: #1a1a1a;
+    --resume-text-soft: #334155;
+    --resume-text-softer: #475569;
+    --sr-preview-shadow: 0 12px 40px -24px rgba(15, 23, 42, 0.35);
+    --sr-preview-inner: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--sr-surface-muted) 88%, transparent) 0%,
+        var(--sr-surface) 100%
+    );
+}
+
+html[data-theme="light"] {
+    --sr-app-bg: #f1f5f9;
+    --sr-surface: #ffffff;
+    --sr-surface-muted: #f8fafc;
+    --sr-text-primary: #0f172a;
+    --sr-text-secondary: #475569;
+    --sr-text-muted: #64748b;
+    --sr-border: #e2e8f0;
+    --sr-border-strong: #cbd5e1;
+    --sr-color-primary: #2563eb;
+    --sr-color-primary-hover: #1d4ed8;
+    --sr-focus-ring: rgba(37, 99, 235, 0.35);
+    --resume-h1: #0f172a;
+    --resume-h2: #111827;
+    --resume-h3: #1d4ed8;
+    --resume-text: #1a1a1a;
+    --resume-text-soft: #334155;
+    --resume-text-softer: #475569;
+    --sr-preview-shadow: 0 12px 40px -24px rgba(15, 23, 42, 0.35);
+    --sr-preview-inner: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--sr-surface-muted) 88%, transparent) 0%,
+        var(--sr-surface) 100%
+    );
+}
+
+html[data-theme="sepia"] {
+    --sr-app-bg: #ebe4d1;
+    --sr-surface: #faf6ea;
+    --sr-surface-muted: #f3ead6;
+    --sr-text-primary: #3b2f1f;
+    --sr-text-secondary: #5c4a36;
+    --sr-text-muted: #7a6652;
+    --sr-border: #e0d4bc;
+    --sr-border-strong: #cfc2a8;
+    --sr-color-primary: #c9a227;
+    --sr-color-primary-hover: #a9861c;
+    --sr-focus-ring: rgba(201, 162, 39, 0.45);
+    --resume-h1: #2f2418;
+    --resume-h2: #3d2f1f;
+    --resume-h3: #8a6d1d;
+    --resume-text: #3a2e20;
+    --resume-text-soft: #4d3f2e;
+    --resume-text-softer: #5c4a36;
+    --sr-preview-shadow: 0 12px 36px -22px rgba(62, 47, 28, 0.25);
+    --sr-preview-inner: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--sr-surface-muted) 90%, transparent) 0%,
+        var(--sr-surface) 100%
+    );
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --sr-app-bg: #0f0c14;
+    --sr-surface: #1a1622;
+    --sr-surface-muted: #15121c;
+    --sr-text-primary: #ece8f4;
+    --sr-text-secondary: #c4bdd9;
+    --sr-text-muted: #9d94b8;
+    --sr-border: #3f3658;
+    --sr-border-strong: #5a4f7a;
+    --sr-color-primary: #a78bfa;
+    --sr-color-primary-hover: #c4b5fd;
+    --sr-focus-ring: rgba(167, 139, 250, 0.45);
+    --resume-h1: #ffffff;
+    --resume-h2: #f4f0ff;
+    --resume-h3: #e8ddff;
+    --resume-text: #e8e3f5;
+    --resume-text-soft: #cfc6e8;
+    --resume-text-softer: #b4abc8;
+    /* 预览区：略抬亮的「纸张」层次 + 紫调环境光，避免与侧栏糊成一块 */
+    --sr-preview-shadow:
+        0 0 0 1px color-mix(in srgb, var(--sr-color-primary) 12%, transparent),
+        0 18px 50px -22px rgba(0, 0, 0, 0.75),
+        0 6px 24px -12px color-mix(in srgb, var(--sr-color-primary) 18%, transparent);
+    --sr-preview-inner: linear-gradient(
+        180deg,
+        #242030 0%,
+        #1d1a26 45%,
+        #181522 100%
+    );
+}
+
+body {
+    background-color: var(--sr-app-bg);
+    color: var(--sr-text-primary);
+    transition:
+        background-color 0.42s ease,
+        color 0.42s ease;
+}
+
+/* 自定义属性切换时，引用它们的颜色类属性可平滑插值（现代浏览器） */
+html {
+    transition: color 0.42s ease;
+}
+
+html[data-theme="light"],
+html[data-theme="sepia"] {
+    color-scheme: light;
+}
+
+/* 深色：WebKit 滚动条与轨道（弹窗 body、侧栏等） */
+html[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--sr-surface-muted);
+    border-radius: 6px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--sr-border-strong);
+    border-radius: 6px;
+    border: 2px solid var(--sr-surface-muted);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--sr-color-primary) 35%, var(--sr-border-strong));
+}

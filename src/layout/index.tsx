@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./index.module.css";
 import { Outlet } from "react-router-dom";
 
-const BasicLayout: React.FC<any> = () => {
+const BasicLayout: React.FC = () => {
     // const Index: any = () => {
     return <div className={styles.layout}>
         {/* <Header /> */}

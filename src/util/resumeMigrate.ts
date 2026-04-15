@@ -2,9 +2,38 @@ import type {
     ExperienceType,
     ProjectExperienceType,
     ResumeBodySectionId,
+    ResumeHeaderLayout,
     ResumeProps,
+    ResumeTheme,
     WorkHistoryType,
 } from '@/types';
+
+/** 标题与页眉默认主题（可被单份简历覆盖） */
+export const DEFAULT_RESUME_THEME: ResumeTheme = {
+    heading1Color: '#0f172a',
+    heading2Color: '#111827',
+    heading3Color: '#1e40af',
+    headerLayout: 'center',
+};
+
+function normalizeTheme(raw: unknown): ResumeTheme {
+    const base: ResumeTheme = { ...DEFAULT_RESUME_THEME };
+    if (!raw || typeof raw !== 'object') {
+        return base;
+    }
+    const t = raw as Record<string, unknown>;
+    const layout = t.headerLayout;
+    const headerLayout: ResumeHeaderLayout =
+        layout === 'left' || layout === 'right' || layout === 'center' ? layout : 'center';
+    const pickColor = (v: unknown, fallback: string) =>
+        typeof v === 'string' && v.trim() ? v.trim() : fallback;
+    return {
+        heading1Color: pickColor(t.heading1Color, base.heading1Color!),
+        heading2Color: pickColor(t.heading2Color, base.heading2Color!),
+        heading3Color: pickColor(t.heading3Color, base.heading3Color!),
+        headerLayout,
+    };
+}
 
 /** 默认把专业技能放在最前，其余保持常见顺序 */
 export const DEFAULT_SECTION_ORDER: ResumeBodySectionId[] = [
@@ -79,6 +108,7 @@ const emptyResume = (): ResumeProps => ({
     projectExperience: [],
     skills: [],
     sectionOrder: [...DEFAULT_SECTION_ORDER],
+    theme: { ...DEFAULT_RESUME_THEME },
 });
 
 function fromLegacyExperience(exp: ExperienceType[]): WorkHistoryType[] {
@@ -163,7 +193,7 @@ export function migrateResume(raw: unknown): ResumeProps {
     let workHistory = Array.isArray(d.workHistory)
         ? (d.workHistory as WorkHistoryType[]).map(normalizeWorkHistoryItem)
         : [];
-    let projectExperience = Array.isArray(d.projectExperience)
+    const projectExperience = Array.isArray(d.projectExperience)
         ? (d.projectExperience as ProjectExperienceType[]).map(normalizeProjectExperienceItem)
         : [];
 
@@ -176,6 +206,7 @@ export function migrateResume(raw: unknown): ResumeProps {
     }
 
     const sectionOrder = normalizeSectionOrder(d.sectionOrder);
+    const theme = normalizeTheme(d.theme);
 
     return {
         name: typeof d.name === 'string' && d.name ? d.name : emptyResume().name,
@@ -185,6 +216,7 @@ export function migrateResume(raw: unknown): ResumeProps {
         projectExperience,
         skills,
         sectionOrder,
+        theme,
     };
 }
 

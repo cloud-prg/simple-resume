@@ -2,7 +2,8 @@
     max-width: 52rem;
     margin: 0 auto;
     padding: 1.5rem 1.25rem 2.5rem;
-    color: #1a1a1a;
+    color: var(--resume-text);
+    transition: color 0.42s ease;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
         "Microsoft YaHei", sans-serif;
     font-size: 14px;
@@ -10,8 +11,31 @@
 }
 
 .header {
-    text-align: center;
     margin-bottom: 1.75rem;
+}
+
+.headerAlignCenter {
+    text-align: center;
+}
+
+.headerAlignLeft {
+    text-align: left;
+}
+
+.headerAlignRight {
+    text-align: right;
+}
+
+.metaRowCenter {
+    justify-content: center;
+}
+
+.metaRowLeft {
+    justify-content: flex-start;
+}
+
+.metaRowRight {
+    justify-content: flex-end;
 }
 
 .name {
@@ -19,16 +43,16 @@
     font-weight: 700;
     letter-spacing: 0.06em;
     margin: 0 0 0.75rem;
+    color: var(--resume-h1);
 }
 
 .metaRow {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
     gap: 0.75rem 1.25rem;
     font-size: 0.875rem;
-    color: #333;
+    color: var(--resume-text-soft);
 }
 
 .metaItem {
@@ -43,10 +67,16 @@
     opacity: 0.75;
 }
 
+/* 联系信息 SVG 为黑色描边 img，深色应用外观下反相为浅色 */
+:global(html[data-theme="dark"]) .metaIcon {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
 .intention {
     margin-top: 0.65rem;
     font-size: 0.9375rem;
-    color: #222;
+    color: var(--resume-text);
 }
 
 .section {
@@ -58,11 +88,12 @@
     font-weight: 700;
     margin: 0 0 0.35rem;
     letter-spacing: 0.02em;
+    color: var(--resume-h2);
 }
 
 .rule {
     border: none;
-    border-top: 1px solid #222;
+    border-top: 2px solid var(--resume-h2);
     margin: 0 0 1rem;
 }
 
@@ -78,20 +109,21 @@
     font-weight: 700;
     flex: 1 1 34%;
     min-width: 0;
+    color: var(--resume-h3);
 }
 
 .workRole {
     flex: 1 1 30%;
     text-align: center;
     font-weight: 400;
-    color: #333;
+    color: var(--resume-text-soft);
     min-width: 0;
 }
 
 .workWhen {
     flex: 0 0 auto;
     text-align: right;
-    color: #333;
+    color: var(--resume-text-soft);
     white-space: nowrap;
 }
 
@@ -103,12 +135,12 @@
 
 .squareList li {
     margin-bottom: 0.35rem;
-    color: #2a2a2a;
+    color: var(--resume-text-softer);
 }
 
 .techLine {
     font-size: 0.875rem;
-    color: #2a2a2a;
+    color: var(--resume-text-softer);
     margin-bottom: 1.25rem;
 }
 
@@ -131,10 +163,11 @@
 .projectName {
     font-weight: 700;
     font-size: 1rem;
+    color: var(--resume-h3);
 }
 
 .projectWhen {
-    color: #333;
+    color: var(--resume-text-soft);
     white-space: nowrap;
     font-size: 0.875rem;
 }
@@ -143,11 +176,12 @@
     font-weight: 700;
     margin: 0.65rem 0 0.35rem;
     font-size: 0.9375rem;
+    color: var(--resume-h3);
 }
 
 .paragraph {
     margin: 0 0 0.5rem;
-    color: #2a2a2a;
+    color: var(--resume-text-softer);
     text-align: justify;
 }
 
@@ -159,7 +193,7 @@
 
 .numbered li {
     margin-bottom: 0.45rem;
-    color: #2a2a2a;
+    color: var(--resume-text-softer);
     text-align: justify;
 }
 
@@ -174,18 +208,33 @@
 .eduSchool {
     font-weight: 700;
     flex-shrink: 0;
+    color: var(--resume-h3);
+}
+
+.previewHot {
+    border-radius: 6px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.previewHotActive {
+    cursor: pointer;
+}
+
+.previewHotActive:hover {
+    background-color: color-mix(in srgb, var(--resume-h3) 6%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--resume-h3) 22%, transparent);
 }
 
 .eduMid {
     flex: 1 1 auto;
     text-align: left;
-    color: #333;
+    color: var(--resume-text-soft);
     padding: 0 0.5rem;
 }
 
 .eduDates {
     flex-shrink: 0;
-    color: #333;
+    color: var(--resume-text-soft);
     white-space: nowrap;
 }
 

@@ -1,5 +1,6 @@
 import { ResumeProps } from '@/types';
 import { message } from 'antd';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 import FileSaver from 'file-saver';
 
 export function exportJsonToTxt(data: ResumeProps, filename = 'data') {
@@ -9,19 +10,27 @@ export function exportJsonToTxt(data: ResumeProps, filename = 'data') {
 }
 
 // Adapt Antd Upload
-export function importJsonFromTxt(event: any): Promise<ResumeProps | string> {
+export function importJsonFromTxt(
+    event: UploadChangeParam<UploadFile>,
+): Promise<ResumeProps | string> {
     return new Promise((resolve, reject) => {
         const file = event?.file?.originFileObj;
         if (!file) {
             console.error('文件未选择');
+            reject(new Error("no file"));
             return;
         }
 
         const reader = new FileReader();
-        reader.onload = function (e: any) {
-            const text = e.target.result;
+        reader.onload = function (e: ProgressEvent<FileReader>) {
+            const text = e.target?.result;
+            if (typeof text !== "string") {
+                message.error("读取文件失败");
+                reject(new Error("invalid file read result"));
+                return;
+            }
             try {
-                const json = JSON?.parse?.(text);
+                const json = JSON.parse(text);
                 message.success('导入成功');
                 resolve(json);
                 // 在这里处理导入的JSON数据

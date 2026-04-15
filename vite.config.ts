@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { autoGenerateTailwindJIT } from './src/util'
+import { assistantDevApiPlugin } from './src/vite-plugins/assistantDevApi'
 
-const isDev = process.env.NODE_ENV === 'development'
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: './',
   server: {
     port: 4300,
@@ -17,6 +17,8 @@ export default defineConfig({
       autoGenerateTailwindJIT()
     }
   }
+  ,
+  ...(mode === 'development' ? [assistantDevApiPlugin()] : []),
   ],
 
   resolve: {
@@ -37,4 +39,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

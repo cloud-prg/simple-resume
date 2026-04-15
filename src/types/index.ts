@@ -55,6 +55,21 @@ export type ExperienceType = Partial<{
 /** 简历正文模块（不含页眉个人信息），顺序可配置 */
 export type ResumeBodySectionId = 'skills' | 'workHistory' | 'projectExperience' | 'education';
 
+/** 页眉个人信息区域水平对齐 */
+export type ResumeHeaderLayout = 'left' | 'center' | 'right';
+
+/** 预览与打印中的标题配色与页眉版式 */
+export interface ResumeTheme {
+    /** 一级标题色（简历姓名） */
+    heading1Color?: string;
+    /** 二级标题色（如「工作经历」等分块标题） */
+    heading2Color?: string;
+    /** 三级标题色（子标题、项目名称等强调色） */
+    heading3Color?: string;
+    /** 页眉个人信息对齐 */
+    headerLayout?: ResumeHeaderLayout;
+}
+
 export interface ResumeProps {
     name: string;
     contact: ContactType;
@@ -65,6 +80,8 @@ export interface ResumeProps {
     skills: { value: string }[];
     /** 各经历区块在预览中的先后，缺省时由迁移逻辑补全 */
     sectionOrder?: ResumeBodySectionId[];
+    /** 标题颜色与页眉布局等展示配置 */
+    theme?: ResumeTheme;
     /** @deprecated 旧字段，迁移用 */
     experience?: ExperienceType[];
 }
