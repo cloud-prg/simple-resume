@@ -1,248 +1,249 @@
-import { ContactType, EducationType, ExperienceType, ResumeProps } from "@/types";
+import { ContactType, ResumeProps, WorkHistoryType, ProjectExperienceType } from "@/types";
+
+const WH_EXAMPLE: WorkHistoryType = {
+    company: "星辰科技有限公司",
+    role: "前端开发工程师",
+    dateRange: "2022.06-至今",
+    bullets: [
+        { value: "负责核心业务模块的前端开发与迭代，保障版本按时交付与线上稳定。" },
+        { value: "参与前端工程化建设，包括组件库沉淀、构建与发布流程优化。" },
+        { value: "与产品、设计、后端协作推进需求评审与技术方案落地。" },
+    ],
+    techStack: "React、Ant Design、Redux、TypeScript、Webpack、Node.js",
+};
+
+const PJ_COLLAB: ProjectExperienceType = {
+    name: "企业协作白板系统",
+    dateRange: "2025.10-至今",
+    introduction:
+        "企业级在线协作白板，支持多人实时编辑、会议与演示场景，服务内部与外部客户团队。",
+    mainWork: [
+        {
+            value:
+                "多人协作与会议系统：优化协同冲突处理与状态同步策略，降低复杂场景下的延迟与卡顿。",
+        },
+        {
+            value:
+                "渲染与交互：对大量图元场景做分块与缓存策略，提升缩放、拖拽时的流畅度。",
+        },
+        {
+            value: "工程化：沉淀可复用模块，完善错误监控与开发调试体验。",
+        },
+    ],
+    results: [
+        { value: "支撑多个业务线接入，覆盖内部与外部客户协作场景。" },
+        { value: "为后续商业化与规模化推广打下基础。" },
+    ],
+};
+
+const PJ_DEVICE: ProjectExperienceType = {
+    name: "智能设备管理终端",
+    dateRange: "2024.03-2024.12",
+    introduction: "门店场景下的 Pad 控制端应用，面向店员与运维人员提供设备管理与数据看板。",
+    mainWork: [
+        { value: "搭建跨端技术栈与 Monorepo 结构，统一业务模块与工具方法。" },
+        { value: "接入异常监控与自定义 DevTools，缩短线上问题定位时间。" },
+        { value: "与硬件团队联调 Socket 信令，保障弱网环境下的指令可靠性。" },
+    ],
+    results: [
+        { value: "覆盖多家线下门店试点，验证门店场景下的稳定性与可用性。" },
+        { value: "支撑业务侧运营数据闭环。" },
+    ],
+};
+
+const EDU_EXAMPLE = {
+    school: "示例理工大学",
+    degree: "本科",
+    major: "软件工程",
+    startDate: "2017",
+    endDate: "2021",
+    description: "在校期间加入学生研发团队，参与 Web 开发相关课题与竞赛。",
+} satisfies ResumeProps["education"];
+
+const SKILLS_DEFAULT = [
+    { value: "熟悉 JavaScript（ES5/ES6+），熟练使用 React 及相关技术栈开发中大型 Web 应用。" },
+    { value: "熟悉前端工程化、组件化与常见性能优化手段，具备 Node.js 与服务端协作经验。" },
+    { value: "具备良好的沟通协作能力，习惯撰写技术文档并参与代码评审。" },
+];
 
 export const MOCK_CONTACT: ContactType = {
-    name: '张三',
-    phone: "123-341-3596", // 假设这些是示例数据
-    email: "zhangsan@gmail.com",
-    address: "", // 可选属性，可以为空
-    career: "xx开发",
-    location: "杭州"
+    name: "示例用户",
+    age: "27",
+    phone: "13800138000",
+    email: "example@demo.com",
+    career: "前端开发工程师",
+    location: "示例城市",
 };
 
 export const MOCK_CONTACT_1: ContactType = {
-    name: '李四',
-    phone: "123-456-7890",
-    email: "lisi123@gmail.com",
-    address: "上海市浦东新区",
-    career: "前端开发",
-    location: "上海"
+    name: "用户A",
+    age: "28",
+    phone: "13800001111",
+    email: "usera@example.com",
+    career: "前端开发工程师",
+    location: "城市A",
 };
 
 export const MOCK_CONTACT_2: ContactType = {
-    name: '王五',
-    phone: "987-654-3210",
-    email: "wangwu456@gmail.com",
-    address: "北京市海淀区",
-    career: "后端开发",
-    location: "北京"
+    name: "用户B",
+    age: "30",
+    phone: "13900002222",
+    email: "userb@example.com",
+    career: "后端开发工程师",
+    location: "城市B",
 };
 
 export const MOCK_CONTACT_3: ContactType = {
-    name: '赵六',
-    phone: "555-666-7777",
-    email: "zhaoliu789@gmail.com",
-    address: "广州市天河区",
-    career: "全栈开发",
-    location: "广州"
+    name: "用户C",
+    age: "26",
+    phone: "13700003333",
+    email: "userc@example.com",
+    career: "全栈开发工程师",
+    location: "城市C",
 };
 
 export const MOCK_CONTACT_4: ContactType = {
-    name: '孙七',
-    phone: "111-222-3333",
-    email: "sunqi321@gmail.com",
-    address: "深圳市南山区",
-    career: "数据科学家",
-    location: "深圳"
+    name: "用户D",
+    age: "29",
+    phone: "13600004444",
+    email: "userd@example.com",
+    career: "数据工程师",
+    location: "城市D",
 };
 
-export const MOCK_EDUCATION: EducationType = {
-    degree: "本科",
-    major: "计算机科学与技术",
-    school: "浙江大学",
-    startDate: "2001/09",
-    endDate: "2005/06",
+const WH_COMPANY_A: WorkHistoryType = {
+    company: "A科技公司",
+    role: "前端工程师",
+    dateRange: "2019.07-2022.05",
+    bullets: [
+        { value: "负责电商业务线活动页与营销组件开发。" },
+        { value: "推动搭建活动搭建平台，降低运营配置成本。" },
+    ],
+    techStack: "React、Rax、微前端、TypeScript",
 };
 
-export const MOCK_EDUCATION_1: EducationType = {
-    degree: "硕士",
-    major: "软件工程",
-    school: "复旦大学",
-    startDate: "2015/09",
-    endDate: "2018/06",
+const WH_COMPANY_B: WorkHistoryType = {
+    company: "B科技公司",
+    role: "后台开发工程师",
+    dateRange: "2016.07-2019.06",
+    bullets: [
+        { value: "负责内部效率工具的后端接口与数据服务。" },
+        { value: "参与服务治理与缓存架构优化。" },
+    ],
+    techStack: "Go、MySQL、Redis、Kubernetes",
 };
 
-export const MOCK_EDUCATION_2: EducationType = {
-    degree: "博士",
-    major: "人工智能",
-    school: "清华大学",
-    startDate: "2010/09",
-    endDate: "2015/06",
+const WH_COMPANY_C: WorkHistoryType = {
+    company: "C科技公司",
+    role: "全栈工程师",
+    dateRange: "2020.03-至今",
+    bullets: [
+        { value: "负责增长业务相关 Web 与 Node 服务。" },
+        { value: "参与 A/B 实验平台前端模块维护。" },
+    ],
+    techStack: "React、Vue、Node.js、GraphQL",
 };
 
-export const MOCK_EDUCATION_3: EducationType = {
-    degree: "本科",
-    major: "信息安全",
-    school: "中山大学",
-    startDate: "2008/09",
-    endDate: "2012/06",
+const WH_COMPANY_D: WorkHistoryType = {
+    company: "D科技公司",
+    role: "研发工程师",
+    dateRange: "2017.07-2020.02",
+    bullets: [
+        { value: "参与搜索相关内部系统的前后端开发。" },
+        { value: "数据可视化看板搭建与维护。" },
+    ],
+    techStack: "Python、Django、React、ECharts",
 };
 
-export const MOCK_EDUCATION_4: EducationType = {
-    degree: "硕士",
-    major: "数据分析",
-    school: "武汉大学",
-    startDate: "2013/09",
-    endDate: "2016/06",
+const PJ_SIMPLE: ProjectExperienceType = {
+    name: "示例项目 A",
+    dateRange: "2023.01-2023.12",
+    introduction: "示例项目介绍，用于演示项目经历区块排版与换行效果。",
+    mainWork: [
+        { value: "需求分析与模块拆分：输出技术方案并推动评审落地。" },
+        { value: "核心功能实现：完成主流程开发与联调自测。" },
+    ],
+    results: [{ value: "按期交付并稳定运行。" }, { value: "通过验收并进入维护阶段。" }],
 };
-
-export const MOCK_EXPERIENCE: ExperienceType[] = [
-    {
-        company: "Google",
-        project: "Open AI",
-        career: "AI工程师",
-        startDate: "2022/05",
-        endDate: "2024/05",
-        keywords: ["Stable Diffusion", "Comfy UI", "Machine Learning", "Deep Learning"],
-        workContent: [
-            { value: "负责参与AI模型的开发和优化" },
-            { value: "使用深度学习技术改进自然语言处理算法" },
-            { value: "设计并实现了一个稳定的图像生成模型" },
-            { value: "与跨职能团队合作，将AI技术集成到产品中" }
-        ],
-        summary: [
-            { value: "项目正在积极开发中，具体工作内容和总结待补充" },
-            { value: "成功提升了AI模型在特定任务上的性能和准确性" },
-            { value: "通过实验和迭代，优化了模型的训练效率和推理速度" },
-            { value: "为团队引入了新的研究思路和技术，推动了项目的创新" }
-        ]
-    },
-]
-
-export const MOCK_EXPERIENCE_1: ExperienceType[] = [
-    {
-        company: "阿里巴巴",
-        project: "淘宝",
-        career: "前端工程师",
-        startDate: "2018/07",
-        endDate: "2020/06",
-        keywords: ["React", "Redux", "Webpack", "Babel"],
-        workContent: [
-            { value: "负责淘宝首页的前端开发和维护" },
-            { value: "优化页面加载速度，通过代码分割和懒加载技术" },
-            { value: "实现响应式设计，确保移动端和桌面端的兼容性" },
-            { value: "与设计师紧密合作，确保设计稿的准确实现" }
-        ],
-        summary: [
-            { value: "提升了页面加载速度和用户交互体验" },
-            { value: "通过代码审查和重构，提高了代码质量和可维护性" },
-            { value: "成功实现了多个新功能，如商品筛选和智能推荐" },
-            { value: "参与团队技术分享，提高了团队整体的前端开发水平" }
-        ]
-    },
-];
-
-export const MOCK_EXPERIENCE_2: ExperienceType[] = [
-    {
-        company: "腾讯",
-        project: "微信",
-        career: "后端工程师",
-        startDate: "2015/07",
-        endDate: "2017/06",
-        keywords: ["Node.js", "Express", "MongoDB", "Redis"],
-        workContent: [
-            { value: "负责微信后端服务的开发和维护" },
-            { value: "设计并实现了高并发的消息推送系统" },
-            { value: "优化数据库查询，提高了数据访问效率" },
-            { value: "参与编写技术文档，确保代码的可读性和可维护性" }
-        ],
-        summary: [
-            { value: "优化了服务器响应时间和系统稳定性" },
-            { value: "通过引入缓存机制，减少了数据库的压力" },
-            { value: "实现了用户行为分析功能，为产品决策提供了数据支持" },
-            { value: "提升了团队的协作效率，通过代码审查和定期的技术讨论" }
-        ]
-    },
-];
-
-export const MOCK_EXPERIENCE_3: ExperienceType[] = [
-    {
-        company: "百度",
-        project: "搜索引擎",
-        career: "全栈工程师",
-        startDate: "2012/07",
-        endDate: "2015/06",
-        keywords: ["Python", "Django", "Elasticsearch", "Docker"],
-        workContent: [
-            { value: "开发和维护百度搜索引擎的后端服务" },
-            { value: "实现了搜索引擎的分布式爬虫系统" },
-            { value: "优化搜索引擎的索引构建流程，提高了搜索效率" },
-            { value: "负责前端页面的性能优化和用户交互设计" }
-        ],
-        summary: [
-            { value: "提高了搜索结果的准确性和响应速度" },
-            { value: "通过引入机器学习算法，提升了搜索结果的相关性" },
-            { value: "实现了用户个性化搜索体验，增加了用户粘性" },
-            { value: "参与团队的技术决策，推动了多项技术改进" }
-        ]
-    },
-];
-
-export const MOCK_EXPERIENCE_4: ExperienceType[] = [
-    {
-        company: "字节跳动",
-        project: "抖音",
-        career: "数据科学家",
-        startDate: "2016/07",
-        endDate: "2019/06",
-        keywords: ["数据分析", "机器学习", "Spark", "TensorFlow"],
-        workContent: [
-            { value: "负责抖音用户行为数据分析" },
-            { value: "构建了用户画像系统，为精准营销提供支持" },
-            { value: "开发了推荐算法，提高了用户内容匹配度" },
-            { value: "设计并实施了A/B测试，验证产品功能的效果" }
-        ],
-        summary: [
-            { value: "通过数据分析优化了推荐算法，提升了用户满意度" },
-            { value: "实现了多维度的用户行为分析，为产品迭代提供了依据" },
-            { value: "构建的数据可视化平台，帮助团队更好地理解用户行为" },
-            { value: "带领数据团队完成了多个重要项目，提升了团队的数据处理能力" }
-        ]
-    },
-];
 
 export const MOCK_RESUME: ResumeProps = {
-    name: '默认模板',
+    name: "默认模板",
     contact: MOCK_CONTACT,
-    education: MOCK_EDUCATION,
-    experience: MOCK_EXPERIENCE,
+    education: EDU_EXAMPLE,
+    workHistory: [WH_EXAMPLE],
+    projectExperience: [PJ_COLLAB, PJ_DEVICE],
+    skills: SKILLS_DEFAULT,
 };
 
-
 export const MOCK_RESUME_1: ResumeProps = {
-    name: '模板',
+    name: "模板",
     contact: MOCK_CONTACT_1,
-    education: MOCK_EDUCATION_1,
-    experience: MOCK_EXPERIENCE_1,
+    education: {
+        degree: "硕士",
+        major: "软件工程",
+        school: "示例大学A",
+        startDate: "2015",
+        endDate: "2018",
+        description: "研究方向为 Web 系统与分布式应用。",
+    },
+    workHistory: [WH_COMPANY_A],
+    projectExperience: [PJ_SIMPLE],
+    skills: [{ value: "熟悉 React 与前端工程化。" }, { value: "熟悉 TypeScript 与单元测试。" }],
 };
 
 export const MOCK_RESUME_2: ResumeProps = {
-    name: '模板',
+    name: "模板",
     contact: MOCK_CONTACT_2,
-    education: MOCK_EDUCATION_2,
-    experience: MOCK_EXPERIENCE_2,
+    education: {
+        degree: "本科",
+        major: "计算机科学与技术",
+        school: "示例大学B",
+        startDate: "2012",
+        endDate: "2016",
+        description: "主修计算机系统与网络相关课程。",
+    },
+    workHistory: [WH_COMPANY_B],
+    projectExperience: [PJ_SIMPLE],
+    skills: [{ value: "熟悉 Go 与云原生基础组件。" }, { value: "熟悉 MySQL 与 Redis 调优。" }],
 };
 
 export const MOCK_RESUME_3: ResumeProps = {
-    name: '模板',
+    name: "模板",
     contact: MOCK_CONTACT_3,
-    education: MOCK_EDUCATION_3,
-    experience: MOCK_EXPERIENCE_3,
+    education: {
+        degree: "本科",
+        major: "信息安全",
+        school: "示例大学C",
+        startDate: "2008",
+        endDate: "2012",
+        description: "参与网络安全与系统安全相关课题。",
+    },
+    workHistory: [WH_COMPANY_C],
+    projectExperience: [PJ_SIMPLE],
+    skills: [{ value: "熟悉前后端开发与 API 设计。" }, { value: "了解微服务与消息队列。" }],
 };
 
 export const MOCK_RESUME_4: ResumeProps = {
-    name: '模板',
+    name: "模板",
     contact: MOCK_CONTACT_4,
-    education: MOCK_EDUCATION_4,
-    experience: MOCK_EXPERIENCE_4,
+    education: {
+        degree: "硕士",
+        major: "统计学",
+        school: "示例大学D",
+        startDate: "2013",
+        endDate: "2016",
+        description: "侧重数据分析与建模方法。",
+    },
+    workHistory: [WH_COMPANY_D],
+    projectExperience: [PJ_SIMPLE],
+    skills: [{ value: "熟悉 Python 与数据处理流水线。" }, { value: "熟悉可视化与报表开发。" }],
 };
 
-export const MOCK_TEMPLATE_LIST: ResumeProps[] = [
-    MOCK_RESUME_1,
-    MOCK_RESUME_2,
-    MOCK_RESUME_3,
-    MOCK_RESUME_4,
-].map(item=>({...item, name: item.experience[0].company + item.name}));
+export const MOCK_TEMPLATE_LIST: ResumeProps[] = [MOCK_RESUME_1, MOCK_RESUME_2, MOCK_RESUME_3, MOCK_RESUME_4].map(
+    (item) => ({
+        ...item,
+        name: `${item.workHistory[0]?.company || ""}${item.name}`,
+    }),
+);
 
-export const MOCK_RESUME_LIST: ResumeProps[] = [
-    MOCK_RESUME,
-]
+export const MOCK_RESUME_LIST: ResumeProps[] = [MOCK_RESUME];

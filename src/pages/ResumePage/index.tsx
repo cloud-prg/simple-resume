@@ -4,18 +4,23 @@ import React, { useMemo, useRef } from "react";
 import EditResumeModal from "./components/EditResumeModal";
 import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
-import { GITHUB_IO_URL, GITHUB_URL, isDev } from "@/constant";
+import { GITHUB_URL } from "@/constant";
+import resumePrintCssUrl from '@/components/Resume/resume-print.css?url';
 import { ResumeProps } from "@/types";
 import { DeleteOutlined, DownloadOutlined, ExportOutlined, ImportOutlined } from "@ant-design/icons";
 import styles from './index.module.css'
 import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
+import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
 import { flushSync } from "react-dom";
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
-    const localResumeList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
-    const [resumeList, setResumeList] = React.useState<ResumeProps[]>(localResumeList.length > 0 ? localResumeList : MOCK_RESUME_LIST);
+    const rawList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
+    const migratedList = migrateResumeList(Array.isArray(rawList) ? rawList : []);
+    const [resumeList, setResumeList] = React.useState<ResumeProps[]>(
+        migratedList.length > 0 ? migratedList : migrateResumeList(MOCK_RESUME_LIST),
+    );
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [triggerImport, setTriggerImport] = React.useState(false);
 
@@ -34,30 +39,46 @@ const Index = () => {
         }
     }, [triggerImport])
 
-    const handlePrint = async () => {
+    const handlePrint = () => {
         const printContent = printRef.current;
-
         if (!printContent) return;
 
-        const printWindow = window.open('', '', 'width=1200,height=900') as any;
+        const printWindow = window.open('', '_blank', 'width=1200,height=900');
+        if (!printWindow) {
+            message.warning('请允许弹出窗口后再试打印');
+            return;
+        }
+
         const doc = printWindow.document;
+        const baseHref = new URL(import.meta.env.BASE_URL || '/', window.location.origin).href;
+        const resumeCssHref = new URL(resumePrintCssUrl, window.location.href).href;
 
-        const jitHref = isDev ? "/tailwind-jit.css" : `${GITHUB_IO_URL}/tailwind-jit.css`;
-
-        doc.write('<html><head><title>Print</title>');
-        // 需要在构建中
-        doc.write(`<link href=${jitHref} rel="stylesheet">`); // JIT模式 
-        doc.write('</head><body>');
+        doc.open();
+        doc.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>打印简历</title>');
+        doc.write(`<base href="${baseHref}">`);
+        doc.write(`<link rel="stylesheet" href="${resumeCssHref}">`);
+        doc.write('</head><body style="margin:0">');
         doc.write(printContent.innerHTML);
         doc.write('</body></html>');
         doc.close();
 
-        // 监听样式加载完成后再执行打印
-        printWindow.onload = () => {
+        let printed = false;
+        const runPrintOnce = () => {
+            if (printed) return;
+            printed = true;
             printWindow.focus();
             printWindow.print();
             printWindow.close();
         };
+
+        const link = doc.querySelector('link[rel="stylesheet"]') as HTMLLinkElement | null;
+        if (link) {
+            link.addEventListener('load', runPrintOnce);
+            link.addEventListener('error', runPrintOnce);
+            window.setTimeout(runPrintOnce, 1500);
+        } else {
+            window.setTimeout(runPrintOnce, 0);
+        }
     };
 
 
@@ -112,7 +133,7 @@ const Index = () => {
         if (status === 'uploading') { return; }
         const res: ResumeProps | string = await importJsonFromTxt(e);
         if (typeof res === 'object') {
-            handleCreate(res);
+            handleCreate(migrateResume(res));
             setTriggerImport(true)
         }
     }

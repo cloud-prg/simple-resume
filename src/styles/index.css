@@ -6,3 +6,27 @@
     --header-height: 0;
     --primary: #0077cc;
 }
+
+/* form-render simpleList 默认 inline-block，在弹窗里会挤在左侧；改为占满表单项宽度 */
+.resume-edit-form .fr-list-simple {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item {
+    width: 100%;
+    min-width: 0;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item .fr-inline-container {
+    flex: 1;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item .ant-input,
+.resume-edit-form .fr-list-simple .fr-list-item textarea.ant-input {
+    max-width: 100%;
+}

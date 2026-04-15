@@ -1,100 +1,195 @@
-import { ContactType, EducationType, ExperienceType } from '@/types';
+import type {
+    EducationType,
+    ProjectExperienceType,
+    ResumeBodySectionId,
+    ResumeProps,
+    WorkHistoryType,
+} from '@/types';
+import { DEFAULT_SECTION_ORDER, normalizeProjectResults } from '@/util/resumeMigrate';
 import React from 'react';
-import CareerSvg from '@/assets/career.svg'
-import EmailSvg from '@/assets/email.svg'
-import PhoneSvg from '@/assets/phone.svg'
-import LocationSvg from '@/assets/location.svg'
-interface IProps {
-    contact: ContactType;
-    education: EducationType;
-    experience: ExperienceType[];
-    ref?: React.RefObject<any>;
+import EmailSvg from '@/assets/email.svg';
+import PhoneSvg from '@/assets/phone.svg';
+import './resume-print.css';
+
+function formatEduRange(edu: EducationType): string {
+    const a = (edu.startDate || '').replace(/\//g, '.');
+    const b = (edu.endDate || '').replace(/\//g, '.');
+    if (a && b) return `${a}-${b}`;
+    return a || b || '';
 }
 
-const Index: React.FC<IProps> = (props) => {
-    // const { contact, education, experience } = props;
-    const { name, email, phone, career, location } = props.contact;
-    const { degree, major, school, startDate, endDate } = props.education;
+function renderAge(age?: string): string | null {
+    if (!age?.trim()) return null;
+    const t = age.trim();
+    return t.includes('岁') ? `年龄：${t}` : `年龄：${t}岁`;
+}
 
-    const ContactItem = ({ icon, text }: { icon: string, text?: string }) => {
-        if (!text) return null
+function renderBodySection(
+    id: ResumeBodySectionId,
+    props: ResumeProps,
+): React.ReactNode {
+    const { workHistory, projectExperience, skills, education } = props;
+    const { degree, major, school, description } = education;
 
-        return <div className='text-lg flex items-center gap-[4px] text-grey-1'>
-            <img className='w-[20px]' src={icon} alt={text} />
-            <span>{text}</span>
-        </div>
+    switch (id) {
+        case 'workHistory':
+            if (!workHistory?.length) return null;
+            return (
+                <section key="workHistory" className="resume-doc__section">
+                    <h2 className="resume-doc__sectionTitle">工作经历</h2>
+                    <hr className="resume-doc__rule" />
+                    {workHistory.map((job, idx) => (
+                        <WorkBlock key={`${job.company}-${idx}`} job={job} />
+                    ))}
+                </section>
+            );
+        case 'projectExperience':
+            if (!projectExperience?.length) return null;
+            return (
+                <section key="projectExperience" className="resume-doc__section">
+                    <h2 className="resume-doc__sectionTitle">项目经历</h2>
+                    <hr className="resume-doc__rule" />
+                    {projectExperience.map((pj, idx) => (
+                        <ProjectBlock key={`${pj.name}-${idx}`} project={pj} />
+                    ))}
+                </section>
+            );
+        case 'education':
+            if (!school) return null;
+            return (
+                <section key="education" className="resume-doc__section">
+                    <h2 className="resume-doc__sectionTitle">教育经历</h2>
+                    <hr className="resume-doc__rule" />
+                    <div className="resume-doc__eduRow">
+                        <span className="resume-doc__eduSchool">{school}</span>
+                        <span className="resume-doc__eduMid">
+                            {[degree, major].filter(Boolean).join('　')}
+                        </span>
+                        <span className="resume-doc__eduDates">{formatEduRange(education)}</span>
+                    </div>
+                    {description?.trim() && <p className="resume-doc__paragraph">{description}</p>}
+                </section>
+            );
+        case 'skills':
+            if (!skills?.length || !skills.some((s) => s?.value?.trim())) return null;
+            return (
+                <section key="skills" className="resume-doc__section">
+                    <h2 className="resume-doc__sectionTitle">专业技能</h2>
+                    <hr className="resume-doc__rule" />
+                    <ul className="resume-doc__squareList">
+                        {skills.map((s, i) =>
+                            s?.value?.trim() ? (
+                                <li key={i}>{s.value}</li>
+                            ) : null,
+                        )}
+                    </ul>
+                </section>
+            );
+        default:
+            return null;
     }
+}
 
-    /**
-     * UI 规范：
-     * - 文字大小：名字5xl 大标题3xl 标题2xl 标题xl 
-     * - 间距：大模块24px 小模块12px 子标题与子内容6px
-    */
-    return <div className="flex flex-col w-full  gap-[24px] text-2xl text-grey-1 rounded-md">
-        {/* Contact */}
-        <div className='flex flex-col'>
-            <span className='text-5xl mb-[12px] font-bold'>{name}</span>
-            <div className='flex items-center gap-[24px]'>
-                <ContactItem icon={PhoneSvg} text={phone} />
-                <ContactItem icon={EmailSvg} text={email} />
-                <ContactItem icon={CareerSvg} text={career} />
-                <ContactItem icon={LocationSvg} text={location} />
-            </div>
-        </div>
+const Index: React.FC<ResumeProps> = (props) => {
+    const { contact, sectionOrder } = props;
+    const { name, phone, email, career, age } = contact;
+    const ageLabel = renderAge(age);
+    const order = sectionOrder?.length ? sectionOrder : DEFAULT_SECTION_ORDER;
 
-        {/* Education */}
-        <div className='flex flex-col'>
-            <span className='text-3xl font-bold mb-[12px]'>教育经历</span>
-            <div className='text-2xl w-full flex items-center justify-between'>
-                <span className='font-bold'>{`${school} ${degree}`}</span>
-                <span >{`${startDate} - ${endDate}`}</span>
-            </div>
-            <span className='text-base'>{major}</span>
-        </div>
-
-        {/* Experience */}
-        <div className='flex flex-col'>
-            <span className='text-3xl font-bold mb-[12px]'>工作经历</span>
-            {props.experience.map((item) => {
-                const { company, project, career, startDate, endDate, keywords, workContent, summary } = item;
-                return <div key={company} className='flex flex-col mb-[24px]'>
-                    {/* Title */}
-                    <div className='text-2xl flex justify-between items-center'>
-                        <div className='flex items-center gap-[8px] font-bold text-grey-2'>
-                            <span>{project}</span>
-                            <span>{career}</span>
-                        </div>
-                        <div>{`${startDate}-${endDate}`}</div>
-                    </div>
-                    {/* Keywords */}
-                    <div className='text-2xl text-lg flex items-center gap-[4px] mb-[12px]'>
-                        <span className='font-bold text-grey-2'>技术栈:</span>
-                        <div className='flex item-center gap-[4px]'>
-                            <span className='text-base text-grey-2'>{keywords?.join(' , ')}</span>
-                        </div>
-                    </div>
-                    {/* Content */}
-                    <div className='flex flex-col mb-[12px]'>
-                        <span className='text-xl font-bold text-grey-2 mb-[6px]'>工作内容:</span>
-                        <ul className='list-disc list-inside flex flex-col gap-[4px]'>
-                            {workContent?.map((item,index) => {
-                                return <li key={index} className='text-base text-grey-2'>{item.value}</li>
-                            })}
-                        </ul>
-                    </div>
-                    {/* Summary */}
-                    <div className='flex flex-col'>
-                        <span className='text-xl font-bold text-grey-2 mb-[6px]'>业绩:</span>
-                        <ul className='list-disc list-inside'>
-                            {summary?.map((item,index) => {
-                                return <li key={index} className='text-base text-grey-2'>{item.value}</li>
-                            })}
-                        </ul>
-                    </div>
+    return (
+        <div className="resume-doc">
+            <header className="resume-doc__header">
+                <h1 className="resume-doc__name">{name || '姓名'}</h1>
+                <div className="resume-doc__metaRow">
+                    {ageLabel && <span>{ageLabel}</span>}
+                    {phone && (
+                        <span className="resume-doc__metaItem">
+                            <img className="resume-doc__metaIcon" src={PhoneSvg} alt="" />
+                            <span>{phone}</span>
+                        </span>
+                    )}
+                    {email && (
+                        <span className="resume-doc__metaItem">
+                            <img className="resume-doc__metaIcon" src={EmailSvg} alt="" />
+                            <span>{email}</span>
+                        </span>
+                    )}
                 </div>
-            })}
+                {career && (
+                    <div className="resume-doc__intention">
+                        求职意向：<span>{career}</span>
+                    </div>
+                )}
+            </header>
+
+            {order.map((id) => renderBodySection(id, props))}
         </div>
-    </div>
+    );
+};
+
+function WorkBlock({ job }: { job: WorkHistoryType }) {
+    if (!job.company && !job.role && !job.dateRange) return null;
+    return (
+        <div>
+            <div className="resume-doc__workHead">
+                <div className="resume-doc__workCompany">{job.company}</div>
+                <div className="resume-doc__workRole">{job.role}</div>
+                <div className="resume-doc__workWhen">{job.dateRange}</div>
+            </div>
+            {job.bullets && job.bullets.some((b) => b?.value?.trim()) && (
+                <ul className="resume-doc__squareList">
+                    {job.bullets.map((b, i) =>
+                        b?.value?.trim() ? <li key={i}>{b.value}</li> : null,
+                    )}
+                </ul>
+            )}
+            {job.techStack?.trim() && !job.hideTechStack && (
+                <p className="resume-doc__techLine">
+                    <span className="resume-doc__techLabel">主要技术栈：</span>
+                    {job.techStack}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function ProjectBlock({ project }: { project: ProjectExperienceType }) {
+    if (!project.name && !project.dateRange) return null;
+    const resultsList = normalizeProjectResults(project.results);
+    return (
+        <div className="resume-doc__projectBlock">
+            <div className="resume-doc__projectHead">
+                <span className="resume-doc__projectName">{project.name}</span>
+                <span className="resume-doc__projectWhen">{project.dateRange}</span>
+            </div>
+            {project.introduction?.trim() && (
+                <>
+                    <div className="resume-doc__subLabel">项目介绍：</div>
+                    <p className="resume-doc__paragraph">{project.introduction}</p>
+                </>
+            )}
+            {project.mainWork && project.mainWork.some((m) => m?.value?.trim()) && (
+                <>
+                    <div className="resume-doc__subLabel">主要工作：</div>
+                    <ol className="resume-doc__numbered">
+                        {project.mainWork.map((m, i) =>
+                            m?.value?.trim() ? <li key={i}>{m.value}</li> : null,
+                        )}
+                    </ol>
+                </>
+            )}
+            {resultsList.some((r) => r?.value?.trim()) && (
+                <>
+                    <div className="resume-doc__subLabel">项目成果：</div>
+                    <ul className="resume-doc__squareList">
+                        {resultsList.map((r, i) =>
+                            r?.value?.trim() ? <li key={i}>{r.value}</li> : null,
+                        )}
+                    </ul>
+                </>
+            )}
+        </div>
+    );
 }
 
 export default Index;

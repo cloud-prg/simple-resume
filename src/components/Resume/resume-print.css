@@ -1,0 +1,201 @@
+/**
+ * 简历预览与打印共用样式（非 CSS Modules，便于打印窗口通过 <link> 加载）。
+ * 类名与组件中一致，修改布局时请同步更新。
+ */
+.resume-doc {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 2.5rem;
+    color: #1a1a1a;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.resume-doc__header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+.resume-doc__name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.75rem;
+}
+
+.resume-doc__metaRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.resume-doc__metaItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.resume-doc__metaIcon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.75;
+}
+
+.resume-doc__intention {
+    margin-top: 0.65rem;
+    font-size: 0.9375rem;
+    color: #222;
+}
+
+.resume-doc__section {
+    margin-bottom: 1.75rem;
+}
+
+.resume-doc__sectionTitle {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin: 0 0 0.35rem;
+    letter-spacing: 0.02em;
+}
+
+.resume-doc__rule {
+    border: none;
+    border-top: 1px solid #222;
+    margin: 0 0 1rem;
+}
+
+.resume-doc__workHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.65rem;
+}
+
+.resume-doc__workCompany {
+    font-weight: 700;
+    flex: 1 1 34%;
+    min-width: 0;
+}
+
+.resume-doc__workRole {
+    flex: 1 1 30%;
+    text-align: center;
+    font-weight: 400;
+    color: #333;
+    min-width: 0;
+}
+
+.resume-doc__workWhen {
+    flex: 0 0 auto;
+    text-align: right;
+    color: #333;
+    white-space: nowrap;
+}
+
+.resume-doc__squareList {
+    margin: 0 0 0.65rem;
+    padding-left: 1.15rem;
+    list-style-type: square;
+}
+
+.resume-doc__squareList li {
+    margin-bottom: 0.35rem;
+    color: #2a2a2a;
+}
+
+.resume-doc__techLine {
+    font-size: 0.875rem;
+    color: #2a2a2a;
+    margin-bottom: 1.25rem;
+}
+
+.resume-doc__techLabel {
+    font-weight: 700;
+}
+
+.resume-doc__projectBlock {
+    margin-bottom: 1.5rem;
+}
+
+.resume-doc__projectHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.resume-doc__projectName {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.resume-doc__projectWhen {
+    color: #333;
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+.resume-doc__subLabel {
+    font-weight: 700;
+    margin: 0.65rem 0 0.35rem;
+    font-size: 0.9375rem;
+}
+
+.resume-doc__paragraph {
+    margin: 0 0 0.5rem;
+    color: #2a2a2a;
+    text-align: justify;
+}
+
+.resume-doc__numbered {
+    margin: 0;
+    padding-left: 1.35rem;
+    list-style-type: decimal;
+}
+
+.resume-doc__numbered li {
+    margin-bottom: 0.45rem;
+    color: #2a2a2a;
+    text-align: justify;
+}
+
+.resume-doc__eduRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.resume-doc__eduSchool {
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.resume-doc__eduMid {
+    flex: 1 1 auto;
+    text-align: left;
+    color: #333;
+    padding: 0 0.5rem;
+}
+
+.resume-doc__eduDates {
+    flex-shrink: 0;
+    color: #333;
+    white-space: nowrap;
+}
+
+@media print {
+    .resume-doc {
+        max-width: none;
+        padding: 0;
+    }
+}

@@ -7,8 +7,5 @@
     "allowSyntheticDefaultImports": true,
     "strict": true
   },
-  "files": [
-    "src/util/index.ts",
-  ],
   "include": ["vite.config.ts"]
 }
