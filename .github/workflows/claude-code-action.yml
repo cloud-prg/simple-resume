@@ -30,6 +30,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             ${{ github.event_name == 'pull_request' && 'Please review this pull request. Check for bugs, security issues, performance problems, and suggest improvements. Be concise but thorough.' || '' }}
             ${{ github.event_name == 'issues' && 'Please analyze this issue and suggest a fix or implementation plan. If it looks like a simple bug, outline the code changes needed.' || '' }}
