@@ -5,9 +5,9 @@
  * `POST /api/assistant/prepare`
  * Content-Type: application/json
  *
- * 请求体：
+ * 请求体（开发 mock）：
  * ```json
- * { "provider": "minimax" | "qwen", "prompt": "用户输入的纯文本" }
+ * { "provider": "mock", "prompt": "用户输入的纯文本" }
  * ```
  *
  * 响应 200：
@@ -29,10 +29,10 @@
  *
  * 错误：HTTP 非 2xx 或连接异常时 EventSource 触发 `error`；前端应提示并可重试。
  *
- * 安全：不在浏览器存放第三方 API Key；由同源 BFF/边缘函数持有密钥并转发上游。
+ * 说明：当前项目也支持浏览器端直连用户自填的 OpenAI 兼容接口；该契约仅保留给 Vite 开发 mock 使用。
  */
 
-export type AssistantProviderId = "minimax" | "qwen";
+export type AssistantProviderId = "mock";
 
 export type PrepareAssistantBody = {
     provider: AssistantProviderId;

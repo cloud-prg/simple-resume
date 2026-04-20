@@ -17,6 +17,11 @@ import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
 import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
 import { flushSync } from "react-dom";
+import {
+    insertResumeListItemAtPath,
+    removeResumeListItemAtPath,
+    updateResumeValueAtPath,
+} from "@/util/resumePath";
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
@@ -91,6 +96,39 @@ const Index = () => {
         })
     }
 
+    const handleInlineFieldChange = React.useCallback((path: string, value: string) => {
+        setResumeList((prev) =>
+            prev.map((item, index) => {
+                if (index !== activeIndex) {
+                    return item;
+                }
+                return updateResumeValueAtPath(item, path, value);
+            }),
+        );
+    }, [activeIndex]);
+
+    const handleInlineListInsert = React.useCallback((path: string, item: unknown, index?: number) => {
+        setResumeList((prev) =>
+            prev.map((entry, currentIndex) => {
+                if (currentIndex !== activeIndex) {
+                    return entry;
+                }
+                return insertResumeListItemAtPath(entry, path, item, index);
+            }),
+        );
+    }, [activeIndex]);
+
+    const handleInlineListRemove = React.useCallback((path: string, index: number) => {
+        setResumeList((prev) =>
+            prev.map((entry, currentIndex) => {
+                if (currentIndex !== activeIndex) {
+                    return entry;
+                }
+                return removeResumeListItemAtPath(entry, path, index);
+            }),
+        );
+    }, [activeIndex]);
+
     const handleCreate = (data: ResumeProps) => {
         let newActive = 0;
         flushSync(() => {
@@ -149,7 +187,7 @@ const Index = () => {
                     <div className={styles.labelCaps}>Workspace</div>
                     <h1 className={styles.pageTitle}>简历编辑</h1>
                     <p className={styles.pageLead}>
-                        左侧维护模板与内容，右侧实时预览；点击预览可快速打开编辑并定位字段。
+                        左侧维护模板与内容，右侧支持所见即改；点击文本可直接修改，复杂结构仍可进入表单编辑。
                     </p>
                     <div className={styles.themeRow}>
                         <span className={styles.themeRowLabel}>外观</span>
@@ -175,7 +213,7 @@ const Index = () => {
                                 打印简历
                             </Button>
                             <Button icon={<RobotOutlined />} onClick={() => setAssistantOpen(true)}>
-                                模型助手
+                                AI 助手
                             </Button>
                             <div onClick={handleExport} className={styles.btnOutline}>
                                 <ExportOutlined />
@@ -259,8 +297,11 @@ const Index = () => {
                 <div className={styles.previewHeader}>
                     <div>
                         <div className={styles.labelCaps}>Preview</div>
-                        <h2 className={styles.previewTitle}>效果预览</h2>
-                        <p className={styles.previewHint}>点击简历区块可在编辑弹窗中定位到对应表单项</p>
+                        <div className={styles.previewTitleRow}>
+                            <h2 className={styles.previewTitle}>效果预览</h2>
+                            <span className={styles.inlineBadge}>所见即改</span>
+                        </div>
+                        <p className={styles.previewHint}>点击文本可直接修改，双击区块空白处可打开表单编辑</p>
                     </div>
                     <GithubCorner href={GITHUB_URL} />
                 </div>
@@ -270,6 +311,10 @@ const Index = () => {
                         <Resume
                             {...resume}
                             previewInteractive
+                            inlineEditable
+                            onInlineFieldChange={handleInlineFieldChange}
+                            onInlineListInsert={handleInlineListInsert}
+                            onInlineListRemove={handleInlineListRemove}
                             onPreviewFieldRequest={(path) => {
                                 editModalRef.current?.openEdit({ scrollToField: path });
                             }}
@@ -278,7 +323,7 @@ const Index = () => {
                 </div>
             </main>
 
-            <AssistantModal open={assistantOpen} onClose={() => setAssistantOpen(false)} />
+            <AssistantModal open={assistantOpen} onClose={() => setAssistantOpen(false)} resume={resume} />
         </div>
     );
 }
