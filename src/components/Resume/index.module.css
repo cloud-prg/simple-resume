@@ -296,6 +296,38 @@
     white-space: nowrap;
 }
 
+.listRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.listRowAction,
+.listAddBtn {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1.65;
+    color: var(--resume-text-soft);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    white-space: nowrap;
+}
+
+.listRowAction:hover,
+.listAddBtn:hover {
+    color: var(--resume-h3);
+}
+
+.listAddBtn {
+    margin-top: 0.2rem;
+}
+
 @media print {
     .root {
         max-width: none;
@@ -312,5 +344,10 @@
     .metaIcon {
         filter: none !important;
         opacity: 1 !important;
+    }
+
+    .listRowAction,
+    .listAddBtn {
+        display: none !important;
     }
 }

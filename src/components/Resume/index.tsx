@@ -25,6 +25,10 @@ export type ResumeViewProps = ResumeProps & {
     inlineEditable?: boolean;
     /** 预览中的字段级修改回调 */
     onInlineFieldChange?: (formPath: string, value: string) => void;
+    /** 预览中向列表路径插入一项（path 指向数组，如 workHistory.0.bullets） */
+    onInlineListInsert?: (path: string, item: unknown, index?: number) => void;
+    /** 预览中按下标删除列表项 */
+    onInlineListRemove?: (path: string, index: number) => void;
 };
 
 function formatEduRange(edu: EducationType): string {
@@ -224,6 +228,8 @@ function renderBodySection(
     inlineEditable: boolean,
     onActivate?: (formPath: string) => void,
     onInlineEdit?: (formPath: string, value: string) => void,
+    onInlineListInsert?: (path: string, item: unknown, index?: number) => void,
+    onInlineListRemove?: (path: string, index: number) => void,
 ): React.ReactNode {
     const { workHistory, projectExperience, skills, education } = data;
     const { degree, major, school, description, startDate, endDate } = education;
@@ -248,6 +254,8 @@ function renderBodySection(
                                 index={idx}
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
+                                onInlineListInsert={onInlineListInsert}
+                                onInlineListRemove={onInlineListRemove}
                             />
                         ))}
                     </section>
@@ -272,6 +280,8 @@ function renderBodySection(
                                 index={idx}
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
+                                onInlineListInsert={onInlineListInsert}
+                                onInlineListRemove={onInlineListRemove}
                             />
                         ))}
                     </section>
@@ -346,17 +356,21 @@ function renderBodySection(
                     </section>
                 </PreviewHot>
             );
-        case 'skills':
-            if (!skills?.length || !skills.some((s) => hasText(s?.value) || inlineEditable)) return null;
+        case 'skills': {
+            const canSeedSkills = inlineEditable && !!onInlineListInsert;
+            if ((!skills?.length && !canSeedSkills) || (skills?.length && !skills.some((s) => hasText(s?.value) || inlineEditable))) {
+                return null;
+            }
+            const skillRows = skills ?? [];
             return (
                 <PreviewHot key="skills" active={!!interactive} formPath="skills" onActivate={onActivate}>
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>专业技能</h2>
                         <hr className={styles.rule} />
                         <ul className={styles.squareList}>
-                            {skills.map((s, i) =>
+                            {skillRows.map((s, i) =>
                                 hasText(s?.value) || inlineEditable ? (
-                                    <li key={i}>
+                                    <li key={i} className={styles.listRow}>
                                         <InlineEditableText
                                             active={inlineEditable}
                                             formPath={`skills.${i}.value`}
@@ -366,13 +380,38 @@ function renderBodySection(
                                             multiline
                                             rows={3}
                                         />
+                                        {inlineEditable && onInlineListRemove && skillRows.length > 1 ? (
+                                            <button
+                                                type="button"
+                                                className={styles.listRowAction}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onInlineListRemove('skills', i);
+                                                }}
+                                            >
+                                                删除
+                                            </button>
+                                        ) : null}
                                     </li>
                                 ) : null,
                             )}
                         </ul>
+                        {canSeedSkills ? (
+                            <button
+                                type="button"
+                                className={styles.listAddBtn}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onInlineListInsert('skills', { value: '' });
+                                }}
+                            >
+                                ＋ 添加技能
+                            </button>
+                        ) : null}
                     </section>
                 </PreviewHot>
             );
+        }
         default:
             return null;
     }
@@ -391,7 +430,15 @@ const metaRowAlignClass = {
 } as const;
 
 const Index: React.FC<ResumeViewProps> = (props) => {
-    const { previewInteractive, onPreviewFieldRequest, inlineEditable, onInlineFieldChange, ...resume } = props;
+    const {
+        previewInteractive,
+        onPreviewFieldRequest,
+        inlineEditable,
+        onInlineFieldChange,
+        onInlineListInsert,
+        onInlineListRemove,
+        ...resume
+    } = props;
     const { mode: appAppearance } = useAppearance();
     const { contact, sectionOrder, theme: themeRaw } = resume;
     const { name, phone, email, career, age } = contact;
@@ -497,6 +544,8 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                     !!inlineEditable,
                     onPreviewFieldRequest,
                     onInlineFieldChange,
+                    onInlineListInsert,
+                    onInlineListRemove,
                 ),
             )}
         </div>
@@ -508,10 +557,14 @@ function WorkBlock(props: {
     index: number;
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
+    onInlineListInsert?: (path: string, item: unknown, index?: number) => void;
+    onInlineListRemove?: (path: string, index: number) => void;
 }) {
-    const { job, index, inlineEditable, onInlineEdit } = props;
+    const { job, index, inlineEditable, onInlineEdit, onInlineListInsert, onInlineListRemove } = props;
     if (!job.company && !job.role && !job.dateRange) return null;
-    const visibleBullets = (job.bullets ?? []).filter((bullet) => hasText(bullet?.value) || inlineEditable);
+    const bullets = job.bullets ?? [];
+    const bulletPath = `workHistory.${index}.bullets`;
+    const visibleBullets = bullets.filter((bullet) => hasText(bullet?.value) || inlineEditable);
     return (
         <div>
             <div className={styles.workHead}>
@@ -545,9 +598,9 @@ function WorkBlock(props: {
             </div>
             {visibleBullets.length > 0 && (
                 <ul className={styles.squareList}>
-                    {(job.bullets ?? []).map((b, i) =>
+                    {bullets.map((b, i) =>
                         hasText(b?.value) || inlineEditable ? (
-                            <li key={i}>
+                            <li key={i} className={styles.listRow}>
                                 <InlineEditableText
                                     active={inlineEditable}
                                     formPath={`workHistory.${index}.bullets.${i}.value`}
@@ -557,11 +610,35 @@ function WorkBlock(props: {
                                     multiline
                                     rows={2}
                                 />
+                                {inlineEditable && onInlineListRemove && bullets.length > 1 ? (
+                                    <button
+                                        type="button"
+                                        className={styles.listRowAction}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onInlineListRemove(bulletPath, i);
+                                        }}
+                                    >
+                                        删除
+                                    </button>
+                                ) : null}
                             </li>
                         ) : null,
                     )}
                 </ul>
             )}
+            {inlineEditable && onInlineListInsert ? (
+                <button
+                    type="button"
+                    className={styles.listAddBtn}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onInlineListInsert(bulletPath, { value: '' });
+                    }}
+                >
+                    ＋ 添加要点
+                </button>
+            ) : null}
             {(hasText(job.techStack) || inlineEditable) && !job.hideTechStack && (
                 <p className={styles.techLine}>
                     <span className={styles.techLabel}>主要技术栈：</span>
@@ -583,11 +660,15 @@ function ProjectBlock(props: {
     index: number;
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
+    onInlineListInsert?: (path: string, item: unknown, index?: number) => void;
+    onInlineListRemove?: (path: string, index: number) => void;
 }) {
-    const { project, index, inlineEditable, onInlineEdit } = props;
+    const { project, index, inlineEditable, onInlineEdit, onInlineListInsert, onInlineListRemove } = props;
     if (!project.name && !project.dateRange) return null;
     const resultsList = normalizeProjectResults(project.results);
     const mainWorkList = project.mainWork ?? [];
+    const mainWorkPath = `projectExperience.${index}.mainWork`;
+    const resultsPath = `projectExperience.${index}.results`;
     return (
         <div className={styles.projectBlock}>
             <div className={styles.projectHead}>
@@ -633,7 +714,7 @@ function ProjectBlock(props: {
                     <ol className={styles.numbered}>
                         {mainWorkList.map((m, i) =>
                             hasText(m?.value) || inlineEditable ? (
-                                <li key={i}>
+                                <li key={i} className={styles.listRow}>
                                     <InlineEditableText
                                         active={inlineEditable}
                                         formPath={`projectExperience.${index}.mainWork.${i}.value`}
@@ -643,10 +724,34 @@ function ProjectBlock(props: {
                                         multiline
                                         rows={3}
                                     />
+                                    {inlineEditable && onInlineListRemove && mainWorkList.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(mainWorkPath, i);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
                                 </li>
                             ) : null,
                         )}
                     </ol>
+                    {inlineEditable && onInlineListInsert ? (
+                        <button
+                            type="button"
+                            className={styles.listAddBtn}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onInlineListInsert(mainWorkPath, { value: '' });
+                            }}
+                        >
+                            ＋ 添加主要工作
+                        </button>
+                    ) : null}
                 </>
             )}
             {resultsList.some((r) => hasText(r?.value) || inlineEditable) && (
@@ -655,7 +760,7 @@ function ProjectBlock(props: {
                     <ul className={styles.squareList}>
                         {resultsList.map((r, i) =>
                             hasText(r?.value) || inlineEditable ? (
-                                <li key={i}>
+                                <li key={i} className={styles.listRow}>
                                     <InlineEditableText
                                         active={inlineEditable}
                                         formPath={`projectExperience.${index}.results.${i}.value`}
@@ -665,10 +770,34 @@ function ProjectBlock(props: {
                                         multiline
                                         rows={3}
                                     />
+                                    {inlineEditable && onInlineListRemove && resultsList.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(resultsPath, i);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
                                 </li>
                             ) : null,
                         )}
                     </ul>
+                    {inlineEditable && onInlineListInsert ? (
+                        <button
+                            type="button"
+                            className={styles.listAddBtn}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onInlineListInsert(resultsPath, { value: '' });
+                            }}
+                        >
+                            ＋ 添加项目成果
+                        </button>
+                    ) : null}
                 </>
             )}
         </div>
