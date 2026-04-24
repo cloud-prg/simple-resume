@@ -1,5 +1,4 @@
 import type {
-    EducationType,
     ProjectExperienceType,
     ResumeBodySectionId,
     ResumeProps,
@@ -30,13 +29,6 @@ export type ResumeViewProps = ResumeProps & {
     /** 预览中按下标删除列表项 */
     onInlineListRemove?: (path: string, index: number) => void;
 };
-
-function formatEduRange(edu: EducationType): string {
-    const a = (edu.startDate || '').replace(/\//g, '.');
-    const b = (edu.endDate || '').replace(/\//g, '.');
-    if (a && b) return `${a}-${b}`;
-    return a || b || '';
-}
 
 function renderAge(age?: string): string | null {
     if (!age?.trim()) return null;
@@ -371,27 +363,29 @@ function renderBodySection(
                             {skillRows.map((s, i) =>
                                 hasText(s?.value) || inlineEditable ? (
                                     <li key={i} className={styles.listRow}>
-                                        <InlineEditableText
-                                            active={inlineEditable}
-                                            formPath={`skills.${i}.value`}
-                                            value={s?.value}
-                                            placeholder="点击填写技能"
-                                            onCommit={onInlineEdit}
-                                            multiline
-                                            rows={3}
-                                        />
-                                        {inlineEditable && onInlineListRemove && skillRows.length > 1 ? (
-                                            <button
-                                                type="button"
-                                                className={styles.listRowAction}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onInlineListRemove('skills', i);
-                                                }}
-                                            >
-                                                删除
-                                            </button>
-                                        ) : null}
+                                        <div className={styles.listRowMain}>
+                                            <InlineEditableText
+                                                active={inlineEditable}
+                                                formPath={`skills.${i}.value`}
+                                                value={s?.value}
+                                                placeholder="点击填写技能"
+                                                onCommit={onInlineEdit}
+                                                multiline
+                                                rows={3}
+                                            />
+                                            {inlineEditable && onInlineListRemove && skillRows.length > 1 ? (
+                                                <button
+                                                    type="button"
+                                                    className={styles.listRowAction}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onInlineListRemove('skills', i);
+                                                    }}
+                                                >
+                                                    删除
+                                                </button>
+                                            ) : null}
+                                        </div>
                                     </li>
                                 ) : null,
                             )}
@@ -601,27 +595,29 @@ function WorkBlock(props: {
                     {bullets.map((b, i) =>
                         hasText(b?.value) || inlineEditable ? (
                             <li key={i} className={styles.listRow}>
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath={`workHistory.${index}.bullets.${i}.value`}
-                                    value={b?.value}
-                                    placeholder="点击填写工作要点"
-                                    onCommit={onInlineEdit}
-                                    multiline
-                                    rows={2}
-                                />
-                                {inlineEditable && onInlineListRemove && bullets.length > 1 ? (
-                                    <button
-                                        type="button"
-                                        className={styles.listRowAction}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onInlineListRemove(bulletPath, i);
-                                        }}
-                                    >
-                                        删除
-                                    </button>
-                                ) : null}
+                                <div className={styles.listRowMain}>
+                                    <InlineEditableText
+                                        active={inlineEditable}
+                                        formPath={`workHistory.${index}.bullets.${i}.value`}
+                                        value={b?.value}
+                                        placeholder="点击填写工作要点"
+                                        onCommit={onInlineEdit}
+                                        multiline
+                                        rows={2}
+                                    />
+                                    {inlineEditable && onInlineListRemove && bullets.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(bulletPath, i);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
+                                </div>
                             </li>
                         ) : null,
                     )}
@@ -715,27 +711,29 @@ function ProjectBlock(props: {
                         {mainWorkList.map((m, i) =>
                             hasText(m?.value) || inlineEditable ? (
                                 <li key={i} className={styles.listRow}>
-                                    <InlineEditableText
-                                        active={inlineEditable}
-                                        formPath={`projectExperience.${index}.mainWork.${i}.value`}
-                                        value={m?.value}
-                                        placeholder="点击填写主要工作"
-                                        onCommit={onInlineEdit}
-                                        multiline
-                                        rows={3}
-                                    />
-                                    {inlineEditable && onInlineListRemove && mainWorkList.length > 1 ? (
-                                        <button
-                                            type="button"
-                                            className={styles.listRowAction}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onInlineListRemove(mainWorkPath, i);
-                                            }}
-                                        >
-                                            删除
-                                        </button>
-                                    ) : null}
+                                    <div className={styles.listRowMain}>
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath={`projectExperience.${index}.mainWork.${i}.value`}
+                                            value={m?.value}
+                                            placeholder="点击填写主要工作"
+                                            onCommit={onInlineEdit}
+                                            multiline
+                                            rows={3}
+                                        />
+                                        {inlineEditable && onInlineListRemove && mainWorkList.length > 1 ? (
+                                            <button
+                                                type="button"
+                                                className={styles.listRowAction}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onInlineListRemove(mainWorkPath, i);
+                                                }}
+                                            >
+                                                删除
+                                            </button>
+                                        ) : null}
+                                    </div>
                                 </li>
                             ) : null,
                         )}
@@ -761,27 +759,29 @@ function ProjectBlock(props: {
                         {resultsList.map((r, i) =>
                             hasText(r?.value) || inlineEditable ? (
                                 <li key={i} className={styles.listRow}>
-                                    <InlineEditableText
-                                        active={inlineEditable}
-                                        formPath={`projectExperience.${index}.results.${i}.value`}
-                                        value={r?.value}
-                                        placeholder="点击填写项目成果"
-                                        onCommit={onInlineEdit}
-                                        multiline
-                                        rows={3}
-                                    />
-                                    {inlineEditable && onInlineListRemove && resultsList.length > 1 ? (
-                                        <button
-                                            type="button"
-                                            className={styles.listRowAction}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onInlineListRemove(resultsPath, i);
-                                            }}
-                                        >
-                                            删除
-                                        </button>
-                                    ) : null}
+                                    <div className={styles.listRowMain}>
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath={`projectExperience.${index}.results.${i}.value`}
+                                            value={r?.value}
+                                            placeholder="点击填写项目成果"
+                                            onCommit={onInlineEdit}
+                                            multiline
+                                            rows={3}
+                                        />
+                                        {inlineEditable && onInlineListRemove && resultsList.length > 1 ? (
+                                            <button
+                                                type="button"
+                                                className={styles.listRowAction}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onInlineListRemove(resultsPath, i);
+                                                }}
+                                            >
+                                                删除
+                                            </button>
+                                        ) : null}
+                                    </div>
                                 </li>
                             ) : null,
                         )}

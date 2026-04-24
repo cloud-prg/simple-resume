@@ -77,11 +77,22 @@ const Index = () => {
         doc.write('</body></html>');
         doc.close();
 
-        printWindow.requestAnimationFrame(() => {
+        const runPrint = () => {
             printWindow.focus();
             printWindow.print();
             printWindow.close();
-        });
+        };
+        /** 双 rAF + 等文档就绪：避免打印对话框打开时布局/字体尚未稳定，列表 marker 与正文错位 */
+        const schedulePrint = () => {
+            printWindow.requestAnimationFrame(() => {
+                printWindow.requestAnimationFrame(runPrint);
+            });
+        };
+        if (doc.readyState === 'complete') {
+            schedulePrint();
+        } else {
+            printWindow.onload = schedulePrint;
+        }
     };
 
 

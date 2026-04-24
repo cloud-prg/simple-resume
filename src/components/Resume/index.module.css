@@ -131,7 +131,8 @@
 
 .squareList {
     margin: 0 0 0.65rem;
-    padding-left: 1.15rem;
+    /* 为 marker 预留宽度；marker 由 li 绘制，勿在 li 上 display:flex（易丢圆点/被 overflow 裁切） */
+    padding-inline-start: 1.35em;
     list-style-type: square;
 }
 
@@ -189,14 +190,15 @@
 
 .numbered {
     margin: 0;
-    padding-left: 1.35rem;
+    /* 有序列表数字区需明显宽于无序列表，双位数序号才不会「压住」首字 */
+    padding-inline-start: 2.25em;
     list-style-type: decimal;
 }
 
 .numbered li {
     margin-bottom: 0.45rem;
     color: var(--resume-text-softer);
-    text-align: justify;
+    text-align: start;
 }
 
 .eduRow {
@@ -296,10 +298,21 @@
     white-space: nowrap;
 }
 
-.listRow {
+/* li 使用 .listRow：保持默认 list-item；勿对 li 写 display:flex，否则易丢圆点/序号 */
+.listRow::marker {
+    color: inherit;
+}
+
+.listRowMain {
     display: flex;
     align-items: flex-start;
     gap: 0.35rem;
+}
+
+/* flex 子项默认 min-width:auto，长文可能溢出；放开收缩以便换行 */
+.listRowMain > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .listRowAction,
@@ -349,5 +362,26 @@
     .listRowAction,
     .listAddBtn {
         display: none !important;
+    }
+
+    /* 屏幕上的省略在 PDF 里会变成「缺字」 */
+    .workWhen,
+    .projectWhen {
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+    }
+
+    /* 打印引擎对两端对齐 + 中文断行偶发异常，简历以可读优先 */
+    .paragraph {
+        text-align: start !important;
+    }
+
+    .squareList {
+        padding-inline-start: 1.45em;
+    }
+
+    .numbered {
+        padding-inline-start: 2.5em;
     }
 }
