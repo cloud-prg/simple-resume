@@ -34,6 +34,7 @@ const Index = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [triggerImport, setTriggerImport] = React.useState(false);
     const [assistantOpen, setAssistantOpen] = React.useState(false);
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
 
     const resume = useMemo(() => {
         return resumeList?.[activeIndex] || migrateResume(MOCK_RESUME);
@@ -193,7 +194,7 @@ const Index = () => {
 
     return (
         <div className={styles.shell}>
-            <aside className={styles.sidebar}>
+            <aside className={`${styles.sidebar} ${drawerOpen ? styles.sidebarHidden : ''}`}>
                 <div className={styles.sidebarHeader}>
                     <div className={styles.labelCaps}>Workspace</div>
                     <h1 className={styles.pageTitle}>简历编辑</h1>
@@ -217,6 +218,7 @@ const Index = () => {
                                     message.success('编辑已保存');
                                 }}
                                 onChange={handleEdit}
+                                onOpenChange={setDrawerOpen}
                             >
                                 编辑简历
                             </EditResumeDrawer>
@@ -294,6 +296,7 @@ const Index = () => {
                                     message.success('创建成功');
                                 }}
                                 onChange={handleCreate}
+                                onOpenChange={setDrawerOpen}
                             >
                                 <div className={styles.btnDashed}>
                                     <span>＋ 新建模板</span>
