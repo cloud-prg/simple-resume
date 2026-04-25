@@ -6,7 +6,7 @@ import schema, {
     type ResumeFormRootKey,
 } from './schema';
 import type { ResumeBodySectionId, ResumeProps } from '@/types';
-import { Modal, Button, message, Select, ColorPicker, Input } from 'antd';
+import { Drawer, Button, message, Select, ColorPicker, Input } from 'antd';
 import { MOCK_TEMPLATE_LIST } from '@/mock';
 import { DEFAULT_SECTION_ORDER, migrateResume, migrateResumeList } from '@/util/resumeMigrate';
 import modalStyles from './index.module.css';
@@ -84,8 +84,8 @@ const formWidgets = {
     colorHex: ColorHexField,
 };
 
-export type EditResumeModalHandle = {
-    /** 打开编辑弹窗；从预览进入时可带字段路径，仅展示对应区块 */
+export type EditResumeDrawerHandle = {
+    /** 打开编辑抽屉；从预览进入时可带字段路径，仅展示对应区块 */
     openEdit: (options?: { scrollToField?: string }) => void;
 };
 
@@ -95,9 +95,10 @@ interface IProps {
     mode?: 'create' | 'edit';
     onChange: (data: ResumeProps) => void;
     onSuccess: () => void;
+    onOpenChange?: (open: boolean) => void;
 }
 
-const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditResumeModal(props, ref) {
+const EditResumeDrawer = forwardRef<EditResumeDrawerHandle, IProps>(function EditResumeDrawer(props, ref) {
     const { mode = 'edit' } = props;
     const form = useForm();
     const [open, setOpen] = React.useState(false);
@@ -105,6 +106,11 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
     /** 从预览点入时为某一顶层区块；null 表示完整表单 */
     const [focusRoot, setFocusRoot] = React.useState<ResumeFormRootKey | null>(null);
     const pendingScrollPath = React.useRef<string | undefined>();
+
+    const setOpenWrapped = useCallback((next: boolean) => {
+        setOpen(next);
+        props.onOpenChange?.(next);
+    }, [props.onOpenChange]);
 
     useImperativeHandle(
         ref,
@@ -114,10 +120,10 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                 const root = formPathToRootKey(opts?.scrollToField);
                 setFocusRoot(root);
                 pendingScrollPath.current = root ? undefined : opts?.scrollToField;
-                setOpen(true);
+                setOpenWrapped(true);
             },
         }),
-        [mode],
+        [mode, setOpenWrapped],
     );
 
     const activeSchema = useMemo(() => {
@@ -159,11 +165,11 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
         }
         props.onChange(merged);
         props.onSuccess();
-        setOpen(false);
+        setOpenWrapped(false);
     };
 
     const handleCancel = () => {
-        setOpen(false);
+        setOpenWrapped(false);
     };
 
     const handleOk = async () => {
@@ -234,14 +240,14 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                     onClick={() => {
                         pendingScrollPath.current = undefined;
                         setFocusRoot(null);
-                        setOpen(true);
+                        setOpenWrapped(true);
                     }}
                 >
                     {props.children}
                 </Button>
             )}
             {mode === 'create' && <div onClick={() => setOpen(true)}>{props.children}</div>}
-            <Modal
+            <Drawer
                 afterOpenChange={(visible) => {
                     if (!visible) {
                         setFocusRoot(null);
@@ -262,109 +268,92 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                     }
                 }}
                 destroyOnClose
+                placement="left"
+                mask={false}
+                width="max(320px, 20vw)"
+                open={open}
+                onClose={handleCancel}
+                title={<RenderTitle />}
                 styles={{
-                    content: {
+                    body: {
                         display: 'flex',
                         flexDirection: 'column',
-                        maxHeight: 'calc(100vh - 40px)',
-                        padding: 0,
                         overflow: 'hidden',
+                        padding: 0,
                         background: 'var(--sr-surface)',
-                    },
-                    header: {
-                        flexShrink: 0,
-                        padding: '16px 24px 12px',
-                        margin: 0,
-                        background: 'var(--sr-surface)',
-                        borderBottom: '1px solid var(--sr-border)',
-                    },
-                    body: {
-                        flex: 1,
-                        minHeight: 0,
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        padding: '16px 24px',
-                        background: 'var(--sr-surface)',
-                        scrollbarColor: 'var(--sr-border-strong) var(--sr-surface-muted)',
-                    },
-                    footer: {
-                        flexShrink: 0,
-                        margin: 0,
-                        padding: '12px 24px',
-                        background: 'var(--sr-surface)',
-                        borderTop: '1px solid var(--sr-border)',
                     },
                 }}
-                title={<RenderTitle />}
-                width="min(920px, 92vw)"
-                open={open}
-                cancelText="取消"
-                okText={mode === 'edit' ? '保存' : '创建'}
-                onOk={handleOk}
-                onCancel={handleCancel}
             >
-                {isPartialEdit && (
-                    <div className={modalStyles.partialHint}>
-                        <span>仅展示与预览点击相关的区块，保存后会写回整份简历。</span>
-                        <Button
-                            type="link"
-                            size="small"
-                            className="p-0"
-                            onClick={() => {
-                                if (!focusRoot) return;
-                                const draft = mergeResumePartial(
-                                    props.data,
-                                    focusRoot,
-                                    form.getValues() as Record<string, unknown>,
-                                );
-                                setFocusRoot(null);
-                                queueMicrotask(() => {
-                                    form.setValues(migrateResume(draft));
-                                });
-                            }}
-                        >
-                            展开全部字段
-                        </Button>
-                    </div>
-                )}
-                {!isPartialEdit && (
-                    <div className={modalStyles.sectionOrderPanel}>
-                        <div className={modalStyles.sectionOrderTitle}>版面顺序（从上至下）</div>
-                        <div className="flex flex-col gap-1">
-                            {sectionOrder.map((id, idx) => (
-                                <div key={id} className={modalStyles.sectionOrderRow}>
-                                    <span className="min-w-0 flex-1 truncate">{SECTION_LABEL[id]}</span>
-                                    <Button size="small" type="link" disabled={idx === 0} onClick={() => moveSection(idx, idx - 1)}>
-                                        上移
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        type="link"
-                                        disabled={idx === sectionOrder.length - 1}
-                                        onClick={() => moveSection(idx, idx + 1)}
-                                    >
-                                        下移
-                                    </Button>
-                                </div>
-                            ))}
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '16px 24px' }}>
+                    {isPartialEdit && (
+                        <div className={modalStyles.partialHint}>
+                            <span>仅展示与预览点击相关的区块，保存后会写回整份简历。</span>
+                            <Button
+                                type="link"
+                                size="small"
+                                className="p-0"
+                                onClick={() => {
+                                    if (!focusRoot) return;
+                                    const draft = mergeResumePartial(
+                                        props.data,
+                                        focusRoot,
+                                        form.getValues() as Record<string, unknown>,
+                                    );
+                                    setFocusRoot(null);
+                                    queueMicrotask(() => {
+                                        form.setValues(migrateResume(draft));
+                                    });
+                                }}
+                            >
+                                展开全部字段
+                            </Button>
                         </div>
-                    </div>
-                )}
-                <FormRender
-                    className="resume-edit-form"
-                    form={form}
-                    schema={activeSchema}
-                    widgets={formWidgets}
-                    onFinish={onFinish}
-                    footer={false}
-                    labelWidth={112}
-                    labelAlign="left"
-                />
-            </Modal>
+                    )}
+                    {!isPartialEdit && (
+                        <div className={modalStyles.sectionOrderPanel}>
+                            <div className={modalStyles.sectionOrderTitle}>版面顺序（从上至下）</div>
+                            <div className="flex flex-col gap-1">
+                                {sectionOrder.map((id, idx) => (
+                                    <div key={id} className={modalStyles.sectionOrderRow}>
+                                        <span className="min-w-0 flex-1 truncate">{SECTION_LABEL[id]}</span>
+                                        <Button size="small" type="link" disabled={idx === 0} onClick={() => moveSection(idx, idx - 1)}>
+                                            上移
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            type="link"
+                                            disabled={idx === sectionOrder.length - 1}
+                                            onClick={() => moveSection(idx, idx + 1)}
+                                        >
+                                            下移
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <FormRender
+                        className="resume-edit-form"
+                        form={form}
+                        schema={activeSchema}
+                        widgets={formWidgets}
+                        onFinish={onFinish}
+                        footer={false}
+                        labelWidth={112}
+                        labelAlign="left"
+                    />
+                </div>
+                <div className={modalStyles.drawerFooter}>
+                    <Button onClick={handleCancel}>取消</Button>
+                    <Button type="primary" onClick={handleOk}>
+                        {mode === 'edit' ? '保存' : '创建'}
+                    </Button>
+                </div>
+            </Drawer>
         </>
     );
 });
 
-EditResumeModal.displayName = 'EditResumeModal';
+EditResumeDrawer.displayName = 'EditResumeDrawer';
 
-export default EditResumeModal;
+export default EditResumeDrawer;
