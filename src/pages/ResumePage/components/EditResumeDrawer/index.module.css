@@ -1,0 +1,51 @@
+.titleScope {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--sr-text-muted);
+}
+
+.templateRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--sr-text-secondary);
+}
+
+.partialHint {
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--sr-color-primary) 28%, var(--sr-border));
+    background: color-mix(in srgb, var(--sr-color-primary) 9%, var(--sr-surface-muted));
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--sr-text-primary);
+}
+
+.sectionOrderPanel {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--sr-border);
+    background: var(--sr-surface-muted);
+    padding: 0.75rem 1rem;
+}
+
+.sectionOrderTitle {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sr-text-primary);
+}
+
+.sectionOrderRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--sr-text-primary);
+}
