@@ -99,7 +99,7 @@ interface IProps {
 }
 
 const EditResumeDrawer = forwardRef<EditResumeDrawerHandle, IProps>(function EditResumeDrawer(props, ref) {
-    const { mode = 'edit' } = props;
+    const { mode = 'edit', onOpenChange } = props;
     const form = useForm();
     const [open, setOpen] = React.useState(false);
     const [sectionOrder, setSectionOrder] = React.useState<ResumeBodySectionId[]>([...DEFAULT_SECTION_ORDER]);
@@ -109,8 +109,8 @@ const EditResumeDrawer = forwardRef<EditResumeDrawerHandle, IProps>(function Edi
 
     const setOpenWrapped = useCallback((next: boolean) => {
         setOpen(next);
-        props.onOpenChange?.(next);
-    }, [props.onOpenChange]);
+        onOpenChange?.(next);
+    }, [onOpenChange]);
 
     useImperativeHandle(
         ref,
