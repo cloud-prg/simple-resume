@@ -1,7 +1,7 @@
 import Resume from "@/components/Resume";
 import { MOCK_RESUME, MOCK_RESUME_LIST } from "@/mock";
 import React, { useMemo, useRef } from "react";
-import EditResumeDrawer, { type EditResumeDrawerHandle } from "./components/EditResumeDrawer";
+import EditResumeModal, { type EditResumeModalHandle } from "./components/EditResumeModal";
 import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
 import { GITHUB_URL } from "@/constant";
@@ -25,7 +25,7 @@ import {
 
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
-    const editModalRef = useRef<EditResumeDrawerHandle>(null);
+    const editModalRef = useRef<EditResumeModalHandle>(null);
     const rawList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
     const migratedList = migrateResumeList(Array.isArray(rawList) ? rawList : []);
     const [resumeList, setResumeList] = React.useState<ResumeProps[]>(
@@ -34,7 +34,6 @@ const Index = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [triggerImport, setTriggerImport] = React.useState(false);
     const [assistantOpen, setAssistantOpen] = React.useState(false);
-    const [drawerOpen, setDrawerOpen] = React.useState(false);
 
     const resume = useMemo(() => {
         return resumeList?.[activeIndex] || migrateResume(MOCK_RESUME);
@@ -194,7 +193,7 @@ const Index = () => {
 
     return (
         <div className={styles.shell}>
-            <aside className={`${styles.sidebar} ${drawerOpen ? styles.sidebarHidden : ''}`}>
+            <aside className={styles.sidebar}>
                 <div className={styles.sidebarHeader}>
                     <div className={styles.labelCaps}>Workspace</div>
                     <h1 className={styles.pageTitle}>简历编辑</h1>
@@ -211,17 +210,16 @@ const Index = () => {
                     <section>
                         <div className={styles.sectionHeading}>操作</div>
                         <div className={styles.stack}>
-                            <EditResumeDrawer
+                            <EditResumeModal
                                 ref={editModalRef}
                                 data={resume}
                                 onSuccess={() => {
                                     message.success('编辑已保存');
                                 }}
                                 onChange={handleEdit}
-                                onOpenChange={setDrawerOpen}
                             >
                                 编辑简历
-                            </EditResumeDrawer>
+                            </EditResumeModal>
                             <Button type="primary" className="shadow-sm" onClick={handlePrint}>
                                 打印简历
                             </Button>
@@ -289,19 +287,18 @@ const Index = () => {
                                     </div>
                                 ))}
 
-                            <EditResumeDrawer
+                            <EditResumeModal
                                 mode="create"
                                 data={resume}
                                 onSuccess={() => {
                                     message.success('创建成功');
                                 }}
                                 onChange={handleCreate}
-                                onOpenChange={setDrawerOpen}
                             >
                                 <div className={styles.btnDashed}>
                                     <span>＋ 新建模板</span>
                                 </div>
-                            </EditResumeDrawer>
+                            </EditResumeModal>
                         </div>
                     </section>
                 </div>

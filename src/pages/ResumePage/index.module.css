@@ -25,10 +25,6 @@
         box-shadow 0.42s ease;
 }
 
-.sidebarHidden {
-    display: none;
-}
-
 .sidebarHeader {
     border-bottom: 1px solid var(--sr-border);
     padding: 1rem;

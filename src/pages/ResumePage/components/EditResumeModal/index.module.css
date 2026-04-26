@@ -49,13 +49,3 @@
     font-size: 0.875rem;
     color: var(--sr-text-primary);
 }
-
-.drawerFooter {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 12px 24px;
-    border-top: 1px solid var(--sr-border);
-    background: var(--sr-surface);
-    flex-shrink: 0;
-}
