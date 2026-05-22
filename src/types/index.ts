@@ -80,6 +80,8 @@ export interface ResumeProps {
     skills: { value: string }[];
     /** 各经历区块在预览中的先后，缺省时由迁移逻辑补全 */
     sectionOrder?: ResumeBodySectionId[];
+    /** 在预览与打印中隐藏的正文模块；表单数据仍保留 */
+    hiddenSections?: ResumeBodySectionId[];
     /** 标题颜色与页眉布局等展示配置 */
     theme?: ResumeTheme;
     /** @deprecated 旧字段，迁移用 */

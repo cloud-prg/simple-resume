@@ -60,6 +60,19 @@ function normalizeSectionOrder(raw: unknown): ResumeBodySectionId[] {
     return out;
 }
 
+function normalizeHiddenSections(raw: unknown): ResumeBodySectionId[] {
+    const out: ResumeBodySectionId[] = [];
+    if (!Array.isArray(raw)) {
+        return out;
+    }
+    for (const x of raw) {
+        if (typeof x === 'string' && SECTION_IDS.has(x as ResumeBodySectionId) && !out.includes(x as ResumeBodySectionId)) {
+            out.push(x as ResumeBodySectionId);
+        }
+    }
+    return out;
+}
+
 /**
  * 教育经历月份控件需要 `YYYY/MM`；纯年份或 `YYYY-M` 等需归一化，否则 Ant DatePicker 会显示 Invalid Date。
  */
@@ -108,6 +121,7 @@ const emptyResume = (): ResumeProps => ({
     projectExperience: [],
     skills: [],
     sectionOrder: [...DEFAULT_SECTION_ORDER],
+    hiddenSections: [],
     theme: { ...DEFAULT_RESUME_THEME },
 });
 
@@ -206,6 +220,7 @@ export function migrateResume(raw: unknown): ResumeProps {
     }
 
     const sectionOrder = normalizeSectionOrder(d.sectionOrder);
+    const hiddenSections = normalizeHiddenSections(d.hiddenSections);
     const theme = normalizeTheme(d.theme);
 
     return {
@@ -216,6 +231,7 @@ export function migrateResume(raw: unknown): ResumeProps {
         projectExperience,
         skills,
         sectionOrder,
+        hiddenSections,
         theme,
     };
 }

@@ -23,6 +23,21 @@ import {
     updateResumeValueAtPath,
 } from "@/util/resumePath";
 
+function getPrintableResumeHtml(printContent: HTMLElement) {
+    const clone = printContent.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('li').forEach((item) => {
+        if (item.textContent?.trim() === '点击填写工作要点') {
+            item.remove();
+        }
+    });
+    clone.querySelectorAll('ul').forEach((list) => {
+        if (!list.querySelector('li')) {
+            list.remove();
+        }
+    });
+    return clone.innerHTML;
+}
+
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
     const editModalRef = useRef<EditResumeModalHandle>(null);
@@ -73,7 +88,7 @@ const Index = () => {
         doc.write(`<style type="text/css" data-theme-print>${themeCssForPrint}</style>`);
         doc.write(`<style type="text/css" data-resume-print>${resumeCssForPrint}</style>`);
         doc.write('</head><body style="margin:0">');
-        doc.write(printContent.innerHTML);
+        doc.write(getPrintableResumeHtml(printContent));
         doc.write('</body></html>');
         doc.close();
 

@@ -434,10 +434,13 @@ const Index: React.FC<ResumeViewProps> = (props) => {
         ...resume
     } = props;
     const { mode: appAppearance } = useAppearance();
-    const { contact, sectionOrder, theme: themeRaw } = resume;
+    const { contact, sectionOrder, hiddenSections, theme: themeRaw } = resume;
     const { name, phone, email, career, age } = contact;
     const ageLabel = renderAge(age);
-    const bodyOrder = sectionOrder?.length ? sectionOrder : DEFAULT_SECTION_ORDER;
+    const hiddenSectionSet = new Set(hiddenSections ?? []);
+    const bodyOrder = (sectionOrder?.length ? sectionOrder : DEFAULT_SECTION_ORDER).filter(
+        (id) => !hiddenSectionSet.has(id),
+    );
     const theme = { ...DEFAULT_RESUME_THEME, ...themeRaw };
     const layout = theme.headerLayout ?? 'center';
     const headerAlign = headerAlignClass[layout] ?? styles.headerAlignCenter;
