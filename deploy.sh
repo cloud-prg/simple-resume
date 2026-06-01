@@ -17,8 +17,8 @@ else
   echo ">>> dist 相对上次提交无变更，跳过 commit"
 fi
 
-# # 如果发布到 https://<USERNAME>.github.io/<REPO>
-git push -f git@github.com:cloud-prg/easy-record.git HEAD:gh-pages
+# 发布到 https://<USERNAME>.github.io/<REPO>（须与仓库名一致）
+git push -f git@github.com:cloud-prg/simple-resume.git HEAD:gh-pages
 
 cd -
 echo ">>> 项目根目录 $(pwd)"

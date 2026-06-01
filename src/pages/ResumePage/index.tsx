@@ -23,6 +23,21 @@ import {
     updateResumeValueAtPath,
 } from "@/util/resumePath";
 
+function getPrintableResumeHtml(printContent: HTMLElement) {
+    const clone = printContent.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('li').forEach((item) => {
+        if (item.textContent?.trim() === '点击填写工作要点') {
+            item.remove();
+        }
+    });
+    clone.querySelectorAll('ul').forEach((list) => {
+        if (!list.querySelector('li')) {
+            list.remove();
+        }
+    });
+    return clone.innerHTML;
+}
+
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
     const editModalRef = useRef<EditResumeModalHandle>(null);
@@ -73,15 +88,26 @@ const Index = () => {
         doc.write(`<style type="text/css" data-theme-print>${themeCssForPrint}</style>`);
         doc.write(`<style type="text/css" data-resume-print>${resumeCssForPrint}</style>`);
         doc.write('</head><body style="margin:0">');
-        doc.write(printContent.innerHTML);
+        doc.write(getPrintableResumeHtml(printContent));
         doc.write('</body></html>');
         doc.close();
 
-        printWindow.requestAnimationFrame(() => {
+        const runPrint = () => {
             printWindow.focus();
             printWindow.print();
             printWindow.close();
-        });
+        };
+        /** 双 rAF + 等文档就绪：避免打印对话框打开时布局/字体尚未稳定，列表 marker 与正文错位 */
+        const schedulePrint = () => {
+            printWindow.requestAnimationFrame(() => {
+                printWindow.requestAnimationFrame(runPrint);
+            });
+        };
+        if (doc.readyState === 'complete') {
+            schedulePrint();
+        } else {
+            printWindow.onload = schedulePrint;
+        }
     };
 
 

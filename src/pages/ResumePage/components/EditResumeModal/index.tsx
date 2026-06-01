@@ -12,7 +12,7 @@ import { DEFAULT_SECTION_ORDER, migrateResume, migrateResumeList } from '@/util/
 import modalStyles from './index.module.css';
 
 const SECTION_LABEL: Record<ResumeBodySectionId, string> = {
-    skills: '专业技能',
+    skills: '个人优势',
     workHistory: '工作经历',
     projectExperience: '项目经历',
     education: '教育经历',
@@ -25,7 +25,7 @@ const ROOT_SECTION_LABEL: Record<ResumeFormRootKey, string> = {
     education: '教育经历',
     workHistory: '工作经历',
     projectExperience: '项目经历',
-    skills: '专业技能',
+    skills: '个人优势',
 };
 
 /** 局部保存：把当前表单片段合并回完整简历 */
@@ -102,6 +102,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
     const form = useForm();
     const [open, setOpen] = React.useState(false);
     const [sectionOrder, setSectionOrder] = React.useState<ResumeBodySectionId[]>([...DEFAULT_SECTION_ORDER]);
+    const [hiddenSections, setHiddenSections] = React.useState<ResumeBodySectionId[]>([]);
     /** 从预览点入时为某一顶层区块；null 表示完整表单 */
     const [focusRoot, setFocusRoot] = React.useState<ResumeFormRootKey | null>(null);
     const pendingScrollPath = React.useRef<string | undefined>();
@@ -135,6 +136,12 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
         });
     };
 
+    const toggleSectionHidden = (id: ResumeBodySectionId) => {
+        setHiddenSections((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+        );
+    };
+
     const localResumeList = migrateResumeList(JSON?.parse?.(localStorage.getItem('resumeList') || '[]'));
 
     const templateList: ResumeProps[] = useMemo(() => {
@@ -153,9 +160,9 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
         let merged: ResumeProps;
         if (mode === 'edit' && focusRoot) {
             merged = mergeResumePartial(props.data, focusRoot, formData);
-            merged = { ...merged, sectionOrder };
+            merged = { ...merged, sectionOrder, hiddenSections };
         } else {
-            merged = migrateResume({ ...formData, sectionOrder } as ResumeProps);
+            merged = migrateResume({ ...formData, sectionOrder, hiddenSections } as ResumeProps);
         }
         props.onChange(merged);
         props.onSuccess();
@@ -209,6 +216,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                                 const m = migrateResume(templateList[value as number]);
                                 form.setValues(m);
                                 setSectionOrder(m.sectionOrder ?? [...DEFAULT_SECTION_ORDER]);
+                                setHiddenSections(m.hiddenSections ?? []);
                             }}
                         >
                             {templateList.map((item, index) => (
@@ -252,6 +260,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                         const m = migrateResume(props.data);
                         form.setValues(m);
                         setSectionOrder(m.sectionOrder ?? [...DEFAULT_SECTION_ORDER]);
+                        setHiddenSections(m.hiddenSections ?? []);
                         const path = pendingScrollPath.current;
                         pendingScrollPath.current = undefined;
                         if (path) {
@@ -259,6 +268,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                         }
                     } else {
                         setSectionOrder([...DEFAULT_SECTION_ORDER]);
+                        setHiddenSections([]);
                     }
                 }}
                 destroyOnClose
@@ -266,7 +276,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                     content: {
                         display: 'flex',
                         flexDirection: 'column',
-                        maxHeight: 'calc(100vh - 40px)',
+                        maxHeight: 'calc(100vh - 96px)',
                         padding: 0,
                         overflow: 'hidden',
                         background: 'var(--sr-surface)',
@@ -332,8 +342,14 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                         <div className={modalStyles.sectionOrderTitle}>版面顺序（从上至下）</div>
                         <div className="flex flex-col gap-1">
                             {sectionOrder.map((id, idx) => (
-                                <div key={id} className={modalStyles.sectionOrderRow}>
+                                <div
+                                    key={id}
+                                    className={`${modalStyles.sectionOrderRow} ${hiddenSections.includes(id) ? modalStyles.sectionOrderRowHidden : ''}`}
+                                >
                                     <span className="min-w-0 flex-1 truncate">{SECTION_LABEL[id]}</span>
+                                    {hiddenSections.includes(id) && (
+                                        <span className={modalStyles.sectionHiddenBadge}>已隐藏</span>
+                                    )}
                                     <Button size="small" type="link" disabled={idx === 0} onClick={() => moveSection(idx, idx - 1)}>
                                         上移
                                     </Button>
@@ -344,6 +360,9 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                                         onClick={() => moveSection(idx, idx + 1)}
                                     >
                                         下移
+                                    </Button>
+                                    <Button size="small" type="link" onClick={() => toggleSectionHidden(id)}>
+                                        {hiddenSections.includes(id) ? '显示' : '隐藏'}
                                     </Button>
                                 </div>
                             ))}

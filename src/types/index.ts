@@ -76,10 +76,12 @@ export interface ResumeProps {
     education: EducationType;
     workHistory: WorkHistoryType[];
     projectExperience: ProjectExperienceType[];
-    /** 专业技能，每条一行展示 */
+    /** 个人优势，每条一行展示 */
     skills: { value: string }[];
     /** 各经历区块在预览中的先后，缺省时由迁移逻辑补全 */
     sectionOrder?: ResumeBodySectionId[];
+    /** 在预览与打印中隐藏的正文模块；表单数据仍保留 */
+    hiddenSections?: ResumeBodySectionId[];
     /** 标题颜色与页眉布局等展示配置 */
     theme?: ResumeTheme;
     /** @deprecated 旧字段，迁移用 */

@@ -9,8 +9,9 @@
     --primary: var(--sr-color-primary);
 }
 
-/* form-render simpleList 默认 inline-block，在弹窗里会挤在左侧；改为占满表单项宽度 */
-.resume-edit-form .fr-list-simple {
+/* form-render simpleList 默认 inline-block 且子项 min-width:220px；弹窗内需要占满剩余宽度 */
+.resume-edit-form .fr-list-simple,
+.resume-edit-form .fr-list-simple-background {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -18,19 +19,74 @@
 }
 
 .resume-edit-form .fr-list-simple .fr-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
     width: 100%;
     min-width: 0;
 }
 
+.resume-edit-form .fr-list-simple .fr-list-item > .fr-panel {
+    display: block;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .resume-edit-form .fr-list-simple .fr-list-item .fr-inline-container {
-    flex: 1;
+    display: flex;
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item .fr-inline-field {
+    display: block;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin-right: 0;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item .fr-field,
+.resume-edit-form .fr-list-simple .fr-list-item .ant-form-item,
+.resume-edit-form .fr-list-simple .fr-list-item .ant-form-item-row,
+.resume-edit-form .fr-list-simple .fr-list-item .ant-form-item-control,
+.resume-edit-form .fr-list-simple .fr-list-item .ant-form-item-control-input,
+.resume-edit-form .fr-list-simple .fr-list-item .ant-form-item-control-input-content {
+    width: 100%;
     min-width: 0;
     max-width: 100%;
 }
 
 .resume-edit-form .fr-list-simple .fr-list-item .ant-input,
 .resume-edit-form .fr-list-simple .fr-list-item textarea.ant-input {
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
+}
+
+.resume-edit-form .fr-list-simple .fr-list-item-operate {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+    .resume-edit-form .fr-list-simple .fr-list-item {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .resume-edit-form .fr-list-simple .fr-list-item > .fr-panel {
+        flex-basis: 100%;
+    }
+
+    .resume-edit-form .fr-list-simple .fr-list-item-operate {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }
 
 /* form-render 列表灰底在深色弹窗里会显「一块亮斑」且易与右侧留白混淆 */

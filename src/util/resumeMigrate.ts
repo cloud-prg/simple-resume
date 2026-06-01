@@ -35,7 +35,7 @@ function normalizeTheme(raw: unknown): ResumeTheme {
     };
 }
 
-/** 默认把专业技能放在最前，其余保持常见顺序 */
+/** 默认把个人优势放在最前，其余保持常见顺序 */
 export const DEFAULT_SECTION_ORDER: ResumeBodySectionId[] = [
     'skills',
     'workHistory',
@@ -56,6 +56,19 @@ function normalizeSectionOrder(raw: unknown): ResumeBodySectionId[] {
     }
     for (const id of DEFAULT_SECTION_ORDER) {
         if (!out.includes(id)) out.push(id);
+    }
+    return out;
+}
+
+function normalizeHiddenSections(raw: unknown): ResumeBodySectionId[] {
+    const out: ResumeBodySectionId[] = [];
+    if (!Array.isArray(raw)) {
+        return out;
+    }
+    for (const x of raw) {
+        if (typeof x === 'string' && SECTION_IDS.has(x as ResumeBodySectionId) && !out.includes(x as ResumeBodySectionId)) {
+            out.push(x as ResumeBodySectionId);
+        }
     }
     return out;
 }
@@ -108,6 +121,7 @@ const emptyResume = (): ResumeProps => ({
     projectExperience: [],
     skills: [],
     sectionOrder: [...DEFAULT_SECTION_ORDER],
+    hiddenSections: [],
     theme: { ...DEFAULT_RESUME_THEME },
 });
 
@@ -206,6 +220,7 @@ export function migrateResume(raw: unknown): ResumeProps {
     }
 
     const sectionOrder = normalizeSectionOrder(d.sectionOrder);
+    const hiddenSections = normalizeHiddenSections(d.hiddenSections);
     const theme = normalizeTheme(d.theme);
 
     return {
@@ -216,6 +231,7 @@ export function migrateResume(raw: unknown): ResumeProps {
         projectExperience,
         skills,
         sectionOrder,
+        hiddenSections,
         theme,
     };
 }

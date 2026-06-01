@@ -271,7 +271,7 @@ const resumeFormSchema = {
         },
         skills: {
             type: "array",
-            title: "专业技能",
+            title: "个人优势",
             span: 24,
             widget: "simpleList",
             props: { hasBackground: true },
