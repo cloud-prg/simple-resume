@@ -35,7 +35,7 @@ function normalizeTheme(raw: unknown): ResumeTheme {
     };
 }
 
-/** 默认把专业技能放在最前，其余保持常见顺序 */
+/** 默认把个人优势放在最前，其余保持常见顺序 */
 export const DEFAULT_SECTION_ORDER: ResumeBodySectionId[] = [
     'skills',
     'workHistory',

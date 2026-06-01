@@ -74,9 +74,16 @@
 }
 
 .intention {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
     margin-top: 0.65rem;
     font-size: 0.9375rem;
     color: var(--resume-text);
+}
+
+.intentionLabel {
+    flex: 0 0 auto;
 }
 
 .section {
@@ -142,6 +149,9 @@
 }
 
 .techLine {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
     font-size: 0.875rem;
     color: var(--resume-text-softer);
     margin-bottom: 1.25rem;
@@ -278,6 +288,13 @@
 
 .inlineBlock {
     display: block;
+    width: 100%;
+}
+
+.inlineFill {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
 }
 
 .inlineSeparator {

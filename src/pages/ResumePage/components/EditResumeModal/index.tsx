@@ -12,7 +12,7 @@ import { DEFAULT_SECTION_ORDER, migrateResume, migrateResumeList } from '@/util/
 import modalStyles from './index.module.css';
 
 const SECTION_LABEL: Record<ResumeBodySectionId, string> = {
-    skills: '专业技能',
+    skills: '个人优势',
     workHistory: '工作经历',
     projectExperience: '项目经历',
     education: '教育经历',
@@ -25,7 +25,7 @@ const ROOT_SECTION_LABEL: Record<ResumeFormRootKey, string> = {
     education: '教育经历',
     workHistory: '工作经历',
     projectExperience: '项目经历',
-    skills: '专业技能',
+    skills: '个人优势',
 };
 
 /** 局部保存：把当前表单片段合并回完整简历 */

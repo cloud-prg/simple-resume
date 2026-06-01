@@ -40,6 +40,39 @@ function hasText(value?: string | null): boolean {
     return typeof value === 'string' && value.trim().length > 0;
 }
 
+type IndexedItem<T> = {
+    item: T;
+    index: number;
+};
+
+function hasListText(list?: { value?: string | null }[] | null): boolean {
+    return Array.isArray(list) && list.some((item) => hasText(item?.value));
+}
+
+function visibleIndexedListItems<T extends { value?: string | null }>(
+    list?: T[] | null,
+): IndexedItem<T>[] {
+    return Array.isArray(list)
+        ? list
+              .map((item, index) => ({ item, index }))
+              .filter(({ item }) => hasText(item?.value))
+        : [];
+}
+
+function hasWorkContent(job?: WorkHistoryType | null): boolean {
+    if (!job) return false;
+    return [job.company, job.role, job.dateRange, job.techStack].some(hasText) || hasListText(job.bullets);
+}
+
+function hasProjectContent(project?: ProjectExperienceType | null): boolean {
+    if (!project) return false;
+    return (
+        [project.name, project.dateRange, project.introduction].some(hasText) ||
+        hasListText(project.mainWork) ||
+        hasListText(normalizeProjectResults(project.results))
+    );
+}
+
 function InlineEditableText(props: {
     active: boolean;
     value?: string;
@@ -220,15 +253,17 @@ function renderBodySection(
     inlineEditable: boolean,
     onActivate?: (formPath: string) => void,
     onInlineEdit?: (formPath: string, value: string) => void,
-    onInlineListInsert?: (path: string, item: unknown, index?: number) => void,
     onInlineListRemove?: (path: string, index: number) => void,
 ): React.ReactNode {
     const { workHistory, projectExperience, skills, education } = data;
     const { degree, major, school, description, startDate, endDate } = education;
 
     switch (id) {
-        case 'workHistory':
-            if (!workHistory?.length) return null;
+        case 'workHistory': {
+            const visibleWorkHistory = (workHistory ?? [])
+                .map((job, index) => ({ job, index }))
+                .filter(({ job }) => hasWorkContent(job));
+            if (!visibleWorkHistory.length) return null;
             return (
                 <PreviewHot
                     key="workHistory"
@@ -239,22 +274,25 @@ function renderBodySection(
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>工作经历</h2>
                         <hr className={styles.rule} />
-                        {workHistory.map((job, idx) => (
+                        {visibleWorkHistory.map(({ job, index }) => (
                             <WorkBlock
-                                key={`${job.company}-${idx}`}
+                                key={`${job.company || 'work'}-${index}`}
                                 job={job}
-                                index={idx}
+                                index={index}
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
-                                onInlineListInsert={onInlineListInsert}
                                 onInlineListRemove={onInlineListRemove}
                             />
                         ))}
                     </section>
                 </PreviewHot>
             );
-        case 'projectExperience':
-            if (!projectExperience?.length) return null;
+        }
+        case 'projectExperience': {
+            const visibleProjectExperience = (projectExperience ?? [])
+                .map((project, index) => ({ project, index }))
+                .filter(({ project }) => hasProjectContent(project));
+            if (!visibleProjectExperience.length) return null;
             return (
                 <PreviewHot
                     key="projectExperience"
@@ -265,20 +303,20 @@ function renderBodySection(
                     <section className={styles.section}>
                         <h2 className={styles.sectionTitle}>项目经历</h2>
                         <hr className={styles.rule} />
-                        {projectExperience.map((pj, idx) => (
+                        {visibleProjectExperience.map(({ project, index }) => (
                             <ProjectBlock
-                                key={`${pj.name}-${idx}`}
-                                project={pj}
-                                index={idx}
+                                key={`${project.name || 'project'}-${index}`}
+                                project={project}
+                                index={index}
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
-                                onInlineListInsert={onInlineListInsert}
                                 onInlineListRemove={onInlineListRemove}
                             />
                         ))}
                     </section>
                 </PreviewHot>
             );
+        }
         case 'education':
             if (![school, degree, major, startDate, endDate, description].some(hasText)) return null;
             return (
@@ -287,49 +325,65 @@ function renderBodySection(
                         <h2 className={styles.sectionTitle}>教育经历</h2>
                         <hr className={styles.rule} />
                         <div className={styles.eduRow}>
-                            <span className={styles.eduSchool}>
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath="education.school"
-                                    value={school}
-                                    placeholder="点击填写学校"
-                                    onCommit={onInlineEdit}
-                                />
-                            </span>
-                            <span className={styles.eduMid}>
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath="education.degree"
-                                    value={degree}
-                                    placeholder="学历"
-                                    onCommit={onInlineEdit}
-                                />
-                                {(hasText(degree) || inlineEditable) && (hasText(major) || inlineEditable) && '　'}
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath="education.major"
-                                    value={major}
-                                    placeholder="专业"
-                                    onCommit={onInlineEdit}
-                                />
-                            </span>
-                            <span className={styles.eduDates}>
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath="education.startDate"
-                                    value={startDate}
-                                    placeholder="开始时间"
-                                    onCommit={onInlineEdit}
-                                />
-                                <span className={styles.inlineSeparator}>-</span>
-                                <InlineEditableText
-                                    active={inlineEditable}
-                                    formPath="education.endDate"
-                                    value={endDate}
-                                    placeholder="结束时间"
-                                    onCommit={onInlineEdit}
-                                />
-                            </span>
+                            {hasText(school) && (
+                                <span className={styles.eduSchool}>
+                                    <InlineEditableText
+                                        active={inlineEditable}
+                                        formPath="education.school"
+                                        value={school}
+                                        placeholder="点击填写学校"
+                                        onCommit={onInlineEdit}
+                                    />
+                                </span>
+                            )}
+                            {(hasText(degree) || hasText(major)) && (
+                                <span className={styles.eduMid}>
+                                    {hasText(degree) && (
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath="education.degree"
+                                            value={degree}
+                                            placeholder="学历"
+                                            onCommit={onInlineEdit}
+                                        />
+                                    )}
+                                    {hasText(degree) && hasText(major) && '　'}
+                                    {hasText(major) && (
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath="education.major"
+                                            value={major}
+                                            placeholder="专业"
+                                            onCommit={onInlineEdit}
+                                        />
+                                    )}
+                                </span>
+                            )}
+                            {(hasText(startDate) || hasText(endDate)) && (
+                                <span className={styles.eduDates}>
+                                    {hasText(startDate) && (
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath="education.startDate"
+                                            value={startDate}
+                                            placeholder="开始时间"
+                                            onCommit={onInlineEdit}
+                                        />
+                                    )}
+                                    {hasText(startDate) && hasText(endDate) && (
+                                        <span className={styles.inlineSeparator}>-</span>
+                                    )}
+                                    {hasText(endDate) && (
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath="education.endDate"
+                                            value={endDate}
+                                            placeholder="结束时间"
+                                            onCommit={onInlineEdit}
+                                        />
+                                    )}
+                                </span>
+                            )}
                         </div>
                         {hasText(description) && (
                             <p className={styles.paragraph}>
@@ -349,59 +403,42 @@ function renderBodySection(
                 </PreviewHot>
             );
         case 'skills': {
-            const canSeedSkills = inlineEditable && !!onInlineListInsert;
-            if ((!skills?.length && !canSeedSkills) || (skills?.length && !skills.some((s) => hasText(s?.value) || inlineEditable))) {
-                return null;
-            }
-            const skillRows = skills ?? [];
+            const skillRows = visibleIndexedListItems(skills);
+            if (!skillRows.length) return null;
             return (
                 <PreviewHot key="skills" active={!!interactive} formPath="skills" onActivate={onActivate}>
                     <section className={styles.section}>
-                        <h2 className={styles.sectionTitle}>专业技能</h2>
+                        <h2 className={styles.sectionTitle}>个人优势</h2>
                         <hr className={styles.rule} />
                         <ul className={styles.squareList}>
-                            {skillRows.map((s, i) =>
-                                hasText(s?.value) || inlineEditable ? (
-                                    <li key={i} className={styles.listRow}>
-                                        <div className={styles.listRowMain}>
-                                            <InlineEditableText
-                                                active={inlineEditable}
-                                                formPath={`skills.${i}.value`}
-                                                value={s?.value}
-                                                placeholder="点击填写技能"
-                                                onCommit={onInlineEdit}
-                                                multiline
-                                                rows={3}
-                                            />
-                                            {inlineEditable && onInlineListRemove && skillRows.length > 1 ? (
-                                                <button
-                                                    type="button"
-                                                    className={styles.listRowAction}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onInlineListRemove('skills', i);
-                                                    }}
-                                                >
-                                                    删除
-                                                </button>
-                                            ) : null}
-                                        </div>
-                                    </li>
-                                ) : null,
-                            )}
+                            {skillRows.map(({ item: s, index: originalIndex }) => (
+                                <li key={originalIndex} className={styles.listRow}>
+                                    <div className={styles.listRowMain}>
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath={`skills.${originalIndex}.value`}
+                                            value={s?.value}
+                                            placeholder="点击填写优势"
+                                            onCommit={onInlineEdit}
+                                            multiline
+                                            rows={3}
+                                        />
+                                        {inlineEditable && onInlineListRemove && skillRows.length > 1 ? (
+                                            <button
+                                                type="button"
+                                                className={styles.listRowAction}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onInlineListRemove('skills', originalIndex);
+                                                }}
+                                            >
+                                                删除
+                                            </button>
+                                        ) : null}
+                                    </div>
+                                </li>
+                            ))}
                         </ul>
-                        {canSeedSkills ? (
-                            <button
-                                type="button"
-                                className={styles.listAddBtn}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onInlineListInsert('skills', { value: '' });
-                                }}
-                            >
-                                ＋ 添加技能
-                            </button>
-                        ) : null}
                     </section>
                 </PreviewHot>
             );
@@ -429,7 +466,6 @@ const Index: React.FC<ResumeViewProps> = (props) => {
         onPreviewFieldRequest,
         inlineEditable,
         onInlineFieldChange,
-        onInlineListInsert,
         onInlineListRemove,
         ...resume
     } = props;
@@ -467,17 +503,19 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                     formPath="contact"
                     onActivate={onPreviewFieldRequest}
                 >
-                    <h1 className={styles.name}>
-                        <InlineEditableText
-                            active={!!inlineEditable}
-                            formPath="contact.name"
-                            value={name}
-                            placeholder="点击填写姓名"
-                            onCommit={onInlineFieldChange}
-                        />
-                    </h1>
+                    {hasText(name) && (
+                        <h1 className={styles.name}>
+                            <InlineEditableText
+                                active={!!inlineEditable}
+                                formPath="contact.name"
+                                value={name}
+                                placeholder="点击填写姓名"
+                                onCommit={onInlineFieldChange}
+                            />
+                        </h1>
+                    )}
                     <div className={`${styles.metaRow} ${metaAlign}`}>
-                        {(ageLabel || inlineEditable) && (
+                        {ageLabel && (
                             <InlineEditableText
                                 active={!!inlineEditable}
                                 formPath="contact.age"
@@ -487,7 +525,7 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                                 onCommit={onInlineFieldChange}
                             />
                         )}
-                        {(phone || inlineEditable) && (
+                        {hasText(phone) && (
                             <span className={styles.metaItem}>
                                 <img className={styles.metaIcon} src={PhoneSvg} alt="" />
                                 <InlineEditableText
@@ -499,7 +537,7 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                                 />
                             </span>
                         )}
-                        {(email || inlineEditable) && (
+                        {hasText(email) && (
                             <span className={styles.metaItem}>
                                 <img className={styles.metaIcon} src={EmailSvg} alt="" />
                                 <InlineEditableText
@@ -513,20 +551,21 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                         )}
                     </div>
                 </PreviewHot>
-                {(career || inlineEditable) && (
+                {hasText(career) && (
                     <PreviewHot
                         active={!!previewInteractive}
                         formPath="contact.career"
                         onActivate={onPreviewFieldRequest}
                     >
                         <div className={styles.intention}>
-                            求职意向：
+                            <span className={styles.intentionLabel}>求职意向：</span>
                             <InlineEditableText
                                 active={!!inlineEditable}
                                 formPath="contact.career"
                                 value={career}
                                 placeholder="点击填写求职意向"
                                 onCommit={onInlineFieldChange}
+                                className={styles.inlineFill}
                             />
                         </div>
                     </PreviewHot>
@@ -541,7 +580,6 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                     !!inlineEditable,
                     onPreviewFieldRequest,
                     onInlineFieldChange,
-                    onInlineListInsert,
                     onInlineListRemove,
                 ),
             )}
@@ -554,91 +592,80 @@ function WorkBlock(props: {
     index: number;
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
-    onInlineListInsert?: (path: string, item: unknown, index?: number) => void;
     onInlineListRemove?: (path: string, index: number) => void;
 }) {
-    const { job, index, inlineEditable, onInlineEdit, onInlineListInsert, onInlineListRemove } = props;
-    if (!job.company && !job.role && !job.dateRange) return null;
-    const bullets = job.bullets ?? [];
-    const bulletPath = `workHistory.${index}.bullets`;
-    const visibleBullets = bullets.filter((bullet) => hasText(bullet?.value) || inlineEditable);
+    const { job, index, inlineEditable, onInlineEdit, onInlineListRemove } = props;
+    if (!hasWorkContent(job)) return null;
+    const bullets = visibleIndexedListItems(job.bullets);
     return (
         <div>
             <div className={styles.workHead}>
-                <div className={styles.workCompany}>
-                    <InlineEditableText
-                        active={inlineEditable}
-                        formPath={`workHistory.${index}.company`}
-                        value={job.company}
-                        placeholder="公司名称"
-                        onCommit={onInlineEdit}
-                    />
-                </div>
-                <div className={styles.workRole}>
-                    <InlineEditableText
-                        active={inlineEditable}
-                        formPath={`workHistory.${index}.role`}
-                        value={job.role}
-                        placeholder="岗位名称"
-                        onCommit={onInlineEdit}
-                    />
-                </div>
-                <div className={styles.workWhen}>
-                    <InlineEditableText
-                        active={inlineEditable}
-                        formPath={`workHistory.${index}.dateRange`}
-                        value={job.dateRange}
-                        placeholder="在职时间"
-                        onCommit={onInlineEdit}
-                    />
-                </div>
+                {hasText(job.company) && (
+                    <div className={styles.workCompany}>
+                        <InlineEditableText
+                            active={inlineEditable}
+                            formPath={`workHistory.${index}.company`}
+                            value={job.company}
+                            placeholder="公司名称"
+                            onCommit={onInlineEdit}
+                        />
+                    </div>
+                )}
+                {hasText(job.role) && (
+                    <div className={styles.workRole}>
+                        <InlineEditableText
+                            active={inlineEditable}
+                            formPath={`workHistory.${index}.role`}
+                            value={job.role}
+                            placeholder="岗位名称"
+                            onCommit={onInlineEdit}
+                        />
+                    </div>
+                )}
+                {hasText(job.dateRange) && (
+                    <div className={styles.workWhen}>
+                        <InlineEditableText
+                            active={inlineEditable}
+                            formPath={`workHistory.${index}.dateRange`}
+                            value={job.dateRange}
+                            placeholder="在职时间"
+                            onCommit={onInlineEdit}
+                        />
+                    </div>
+                )}
             </div>
-            {visibleBullets.length > 0 && (
+            {bullets.length > 0 && (
                 <ul className={styles.squareList}>
-                    {bullets.map((b, i) =>
-                        hasText(b?.value) || inlineEditable ? (
-                            <li key={i} className={styles.listRow}>
-                                <div className={styles.listRowMain}>
-                                    <InlineEditableText
-                                        active={inlineEditable}
-                                        formPath={`workHistory.${index}.bullets.${i}.value`}
-                                        value={b?.value}
-                                        placeholder="点击填写工作要点"
-                                        onCommit={onInlineEdit}
-                                        multiline
-                                        rows={2}
-                                    />
-                                    {inlineEditable && onInlineListRemove && bullets.length > 1 ? (
-                                        <button
-                                            type="button"
-                                            className={styles.listRowAction}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onInlineListRemove(bulletPath, i);
-                                            }}
-                                        >
-                                            删除
-                                        </button>
-                                    ) : null}
-                                </div>
-                            </li>
-                        ) : null,
-                    )}
+                    {bullets.map(({ item: b, index: bulletIndex }) => (
+                        <li key={bulletIndex} className={styles.listRow}>
+                            <div className={styles.listRowMain}>
+                                <InlineEditableText
+                                    active={inlineEditable}
+                                    formPath={`workHistory.${index}.bullets.${bulletIndex}.value`}
+                                    value={b?.value}
+                                    placeholder="点击填写工作要点"
+                                    onCommit={onInlineEdit}
+                                    multiline
+                                    rows={2}
+                                />
+                                {inlineEditable && onInlineListRemove && bullets.length > 1 ? (
+                                    <button
+                                        type="button"
+                                        className={styles.listRowAction}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onInlineListRemove(`workHistory.${index}.bullets`, bulletIndex);
+                                        }}
+                                    >
+                                        删除
+                                    </button>
+                                ) : null}
+                            </div>
+                        </li>
+                    ))}
                 </ul>
             )}
-            {inlineEditable && onInlineListInsert ? (
-                <button
-                    type="button"
-                    className={styles.listAddBtn}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onInlineListInsert(bulletPath, { value: '' });
-                    }}
-                >
-                    ＋ 添加要点
-                </button>
-            ) : null}
-            {(hasText(job.techStack) || inlineEditable) && !job.hideTechStack && (
+            {hasText(job.techStack) && !job.hideTechStack && (
                 <p className={styles.techLine}>
                     <span className={styles.techLabel}>主要技术栈：</span>
                     <InlineEditableText
@@ -647,6 +674,7 @@ function WorkBlock(props: {
                         value={job.techStack}
                         placeholder="点击填写主要技术栈"
                         onCommit={onInlineEdit}
+                        className={styles.inlineFill}
                     />
                 </p>
             )}
@@ -659,38 +687,39 @@ function ProjectBlock(props: {
     index: number;
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
-    onInlineListInsert?: (path: string, item: unknown, index?: number) => void;
     onInlineListRemove?: (path: string, index: number) => void;
 }) {
-    const { project, index, inlineEditable, onInlineEdit, onInlineListInsert, onInlineListRemove } = props;
-    if (!project.name && !project.dateRange) return null;
-    const resultsList = normalizeProjectResults(project.results);
-    const mainWorkList = project.mainWork ?? [];
-    const mainWorkPath = `projectExperience.${index}.mainWork`;
-    const resultsPath = `projectExperience.${index}.results`;
+    const { project, index, inlineEditable, onInlineEdit, onInlineListRemove } = props;
+    if (!hasProjectContent(project)) return null;
+    const resultsList = visibleIndexedListItems(normalizeProjectResults(project.results));
+    const mainWorkList = visibleIndexedListItems(project.mainWork);
     return (
         <div className={styles.projectBlock}>
             <div className={styles.projectHead}>
-                <span className={styles.projectName}>
-                    <InlineEditableText
-                        active={inlineEditable}
-                        formPath={`projectExperience.${index}.name`}
-                        value={project.name}
-                        placeholder="项目名称"
-                        onCommit={onInlineEdit}
-                    />
-                </span>
-                <span className={styles.projectWhen}>
-                    <InlineEditableText
-                        active={inlineEditable}
-                        formPath={`projectExperience.${index}.dateRange`}
-                        value={project.dateRange}
-                        placeholder="项目时间"
-                        onCommit={onInlineEdit}
-                    />
-                </span>
+                {hasText(project.name) && (
+                    <span className={styles.projectName}>
+                        <InlineEditableText
+                            active={inlineEditable}
+                            formPath={`projectExperience.${index}.name`}
+                            value={project.name}
+                            placeholder="项目名称"
+                            onCommit={onInlineEdit}
+                        />
+                    </span>
+                )}
+                {hasText(project.dateRange) && (
+                    <span className={styles.projectWhen}>
+                        <InlineEditableText
+                            active={inlineEditable}
+                            formPath={`projectExperience.${index}.dateRange`}
+                            value={project.dateRange}
+                            placeholder="项目时间"
+                            onCommit={onInlineEdit}
+                        />
+                    </span>
+                )}
             </div>
-            {(hasText(project.introduction) || inlineEditable) && (
+            {hasText(project.introduction) && (
                 <>
                     <div className={styles.subLabel}>项目介绍：</div>
                     <p className={styles.paragraph}>
@@ -707,100 +736,72 @@ function ProjectBlock(props: {
                     </p>
                 </>
             )}
-            {mainWorkList.some((m) => hasText(m?.value) || inlineEditable) && (
+            {mainWorkList.length > 0 && (
                 <>
                     <div className={styles.subLabel}>主要工作：</div>
                     <ol className={styles.numbered}>
-                        {mainWorkList.map((m, i) =>
-                            hasText(m?.value) || inlineEditable ? (
-                                <li key={i} className={styles.listRow}>
-                                    <div className={styles.listRowMain}>
-                                        <InlineEditableText
-                                            active={inlineEditable}
-                                            formPath={`projectExperience.${index}.mainWork.${i}.value`}
-                                            value={m?.value}
-                                            placeholder="点击填写主要工作"
-                                            onCommit={onInlineEdit}
-                                            multiline
-                                            rows={3}
-                                        />
-                                        {inlineEditable && onInlineListRemove && mainWorkList.length > 1 ? (
-                                            <button
-                                                type="button"
-                                                className={styles.listRowAction}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onInlineListRemove(mainWorkPath, i);
-                                                }}
-                                            >
-                                                删除
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                </li>
-                            ) : null,
-                        )}
+                        {mainWorkList.map(({ item: m, index: workIndex }) => (
+                            <li key={workIndex} className={styles.listRow}>
+                                <div className={styles.listRowMain}>
+                                    <InlineEditableText
+                                        active={inlineEditable}
+                                        formPath={`projectExperience.${index}.mainWork.${workIndex}.value`}
+                                        value={m?.value}
+                                        placeholder="点击填写主要工作"
+                                        onCommit={onInlineEdit}
+                                        multiline
+                                        rows={3}
+                                    />
+                                    {inlineEditable && onInlineListRemove && mainWorkList.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(`projectExperience.${index}.mainWork`, workIndex);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
+                                </div>
+                            </li>
+                        ))}
                     </ol>
-                    {inlineEditable && onInlineListInsert ? (
-                        <button
-                            type="button"
-                            className={styles.listAddBtn}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onInlineListInsert(mainWorkPath, { value: '' });
-                            }}
-                        >
-                            ＋ 添加主要工作
-                        </button>
-                    ) : null}
                 </>
             )}
-            {resultsList.some((r) => hasText(r?.value) || inlineEditable) && (
+            {resultsList.length > 0 && (
                 <>
                     <div className={styles.subLabel}>项目成果：</div>
                     <ul className={styles.squareList}>
-                        {resultsList.map((r, i) =>
-                            hasText(r?.value) || inlineEditable ? (
-                                <li key={i} className={styles.listRow}>
-                                    <div className={styles.listRowMain}>
-                                        <InlineEditableText
-                                            active={inlineEditable}
-                                            formPath={`projectExperience.${index}.results.${i}.value`}
-                                            value={r?.value}
-                                            placeholder="点击填写项目成果"
-                                            onCommit={onInlineEdit}
-                                            multiline
-                                            rows={3}
-                                        />
-                                        {inlineEditable && onInlineListRemove && resultsList.length > 1 ? (
-                                            <button
-                                                type="button"
-                                                className={styles.listRowAction}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onInlineListRemove(resultsPath, i);
-                                                }}
-                                            >
-                                                删除
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                </li>
-                            ) : null,
-                        )}
+                        {resultsList.map(({ item: r, index: resultIndex }) => (
+                            <li key={resultIndex} className={styles.listRow}>
+                                <div className={styles.listRowMain}>
+                                    <InlineEditableText
+                                        active={inlineEditable}
+                                        formPath={`projectExperience.${index}.results.${resultIndex}.value`}
+                                        value={r?.value}
+                                        placeholder="点击填写项目成果"
+                                        onCommit={onInlineEdit}
+                                        multiline
+                                        rows={3}
+                                    />
+                                    {inlineEditable && onInlineListRemove && resultsList.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(`projectExperience.${index}.results`, resultIndex);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
+                                </div>
+                            </li>
+                        ))}
                     </ul>
-                    {inlineEditable && onInlineListInsert ? (
-                        <button
-                            type="button"
-                            className={styles.listAddBtn}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onInlineListInsert(resultsPath, { value: '' });
-                            }}
-                        >
-                            ＋ 添加项目成果
-                        </button>
-                    ) : null}
                 </>
             )}
         </div>

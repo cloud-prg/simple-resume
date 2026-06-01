@@ -76,7 +76,7 @@ export interface ResumeProps {
     education: EducationType;
     workHistory: WorkHistoryType[];
     projectExperience: ProjectExperienceType[];
-    /** 专业技能，每条一行展示 */
+    /** 个人优势，每条一行展示 */
     skills: { value: string }[];
     /** 各经历区块在预览中的先后，缺省时由迁移逻辑补全 */
     sectionOrder?: ResumeBodySectionId[];
