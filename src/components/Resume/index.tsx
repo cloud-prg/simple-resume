@@ -1,12 +1,17 @@
 import type {
+    CustomResumeSection,
     ProjectExperienceType,
     ResumeBodySectionId,
     ResumeProps,
+    ResumeSectionId,
+    ResumeSectionLabelKey,
     WorkHistoryType,
 } from '@/types';
 import {
+    DEFAULT_SECTION_LABELS,
     DEFAULT_RESUME_THEME,
     DEFAULT_SECTION_ORDER,
+    DEFAULT_SECTION_TITLES,
     normalizeProjectResults,
 } from '@/util/resumeMigrate';
 import React from 'react';
@@ -71,6 +76,28 @@ function hasProjectContent(project?: ProjectExperienceType | null): boolean {
         hasListText(project.mainWork) ||
         hasListText(normalizeProjectResults(project.results))
     );
+}
+
+function hasCustomItemContent(item?: { value?: string; title?: string; description?: string } | null): boolean {
+    if (!item) return false;
+    return [item.value, item.title, item.description].some(hasText);
+}
+
+function hasCustomSectionContent(section?: CustomResumeSection | null): boolean {
+    if (!section) return false;
+    return Array.isArray(section.items) && section.items.some(hasCustomItemContent);
+}
+
+function isCustomSectionRef(id: ResumeSectionId): id is `custom:${string}` {
+    return id.startsWith('custom:');
+}
+
+function getSectionTitle(data: ResumeProps, id: ResumeBodySectionId): string {
+    return data.sectionTitles?.[id]?.trim() || DEFAULT_SECTION_TITLES[id];
+}
+
+function getSectionLabel(data: ResumeProps, key: ResumeSectionLabelKey): string {
+    return data.sectionLabels?.[key]?.trim() || DEFAULT_SECTION_LABELS[key];
 }
 
 function InlineEditableText(props: {
@@ -272,7 +299,7 @@ function renderBodySection(
                     onActivate={onActivate}
                 >
                     <section className={styles.section}>
-                        <h2 className={styles.sectionTitle}>工作经历</h2>
+                        <h2 className={styles.sectionTitle}>{getSectionTitle(data, 'workHistory')}</h2>
                         <hr className={styles.rule} />
                         {visibleWorkHistory.map(({ job, index }) => (
                             <WorkBlock
@@ -282,6 +309,7 @@ function renderBodySection(
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
                                 onInlineListRemove={onInlineListRemove}
+                                techStackLabel={getSectionLabel(data, 'workHistory.techStack')}
                             />
                         ))}
                     </section>
@@ -301,7 +329,7 @@ function renderBodySection(
                     onActivate={onActivate}
                 >
                     <section className={styles.section}>
-                        <h2 className={styles.sectionTitle}>项目经历</h2>
+                        <h2 className={styles.sectionTitle}>{getSectionTitle(data, 'projectExperience')}</h2>
                         <hr className={styles.rule} />
                         {visibleProjectExperience.map(({ project, index }) => (
                             <ProjectBlock
@@ -311,6 +339,11 @@ function renderBodySection(
                                 inlineEditable={inlineEditable}
                                 onInlineEdit={onInlineEdit}
                                 onInlineListRemove={onInlineListRemove}
+                                labels={{
+                                    introduction: getSectionLabel(data, 'projectExperience.introduction'),
+                                    mainWork: getSectionLabel(data, 'projectExperience.mainWork'),
+                                    results: getSectionLabel(data, 'projectExperience.results'),
+                                }}
                             />
                         ))}
                     </section>
@@ -322,7 +355,7 @@ function renderBodySection(
             return (
                 <PreviewHot key="education" active={!!interactive} formPath="education" onActivate={onActivate}>
                     <section className={styles.section}>
-                        <h2 className={styles.sectionTitle}>教育经历</h2>
+                        <h2 className={styles.sectionTitle}>{getSectionTitle(data, 'education')}</h2>
                         <hr className={styles.rule} />
                         <div className={styles.eduRow}>
                             {hasText(school) && (
@@ -408,7 +441,7 @@ function renderBodySection(
             return (
                 <PreviewHot key="skills" active={!!interactive} formPath="skills" onActivate={onActivate}>
                     <section className={styles.section}>
-                        <h2 className={styles.sectionTitle}>个人优势</h2>
+                        <h2 className={styles.sectionTitle}>{getSectionTitle(data, 'skills')}</h2>
                         <hr className={styles.rule} />
                         <ul className={styles.squareList}>
                             {skillRows.map(({ item: s, index: originalIndex }) => (
@@ -448,6 +481,107 @@ function renderBodySection(
     }
 }
 
+function renderCustomSection(
+    section: CustomResumeSection,
+    index: number,
+    interactive: boolean,
+    inlineEditable: boolean,
+    onActivate?: (formPath: string) => void,
+    onInlineEdit?: (formPath: string, value: string) => void,
+    onInlineListRemove?: (path: string, index: number) => void,
+): React.ReactNode {
+    if (!hasCustomSectionContent(section)) return null;
+    const items = (section.items ?? [])
+        .map((item, itemIndex) => ({ item, index: itemIndex }))
+        .filter(({ item }) => hasCustomItemContent(item));
+    if (!items.length) return null;
+    const formPath = `customSections.${index}`;
+
+    return (
+        <PreviewHot key={`custom:${section.id}`} active={!!interactive} formPath={formPath} onActivate={onActivate}>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>{section.title || '自定义模块'}</h2>
+                <hr className={styles.rule} />
+                {section.displayMode === 'titled' ? (
+                    <div>
+                        {items.map(({ item, index: itemIndex }) => (
+                            <div key={itemIndex} className={styles.customTitledItem}>
+                                {hasText(item.title) && (
+                                    <div className={styles.customItemTitle}>
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath={`customSections.${index}.items.${itemIndex}.title`}
+                                            value={item.title}
+                                            placeholder="条目标题"
+                                            onCommit={onInlineEdit}
+                                        />
+                                    </div>
+                                )}
+                                {hasText(item.description) && (
+                                    <p className={styles.paragraph}>
+                                        <InlineEditableText
+                                            active={inlineEditable}
+                                            formPath={`customSections.${index}.items.${itemIndex}.description`}
+                                            value={item.description}
+                                            placeholder="条目说明"
+                                            onCommit={onInlineEdit}
+                                            multiline
+                                            rows={3}
+                                            className={styles.inlineBlock}
+                                        />
+                                    </p>
+                                )}
+                                {inlineEditable && onInlineListRemove && items.length > 1 ? (
+                                    <button
+                                        type="button"
+                                        className={styles.listRowAction}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onInlineListRemove(`customSections.${index}.items`, itemIndex);
+                                        }}
+                                    >
+                                        删除
+                                    </button>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <ul className={styles.squareList}>
+                        {items.map(({ item, index: itemIndex }) => (
+                            <li key={itemIndex} className={styles.listRow}>
+                                <div className={styles.listRowMain}>
+                                    <InlineEditableText
+                                        active={inlineEditable}
+                                        formPath={`customSections.${index}.items.${itemIndex}.value`}
+                                        value={item.value}
+                                        placeholder="点击填写内容"
+                                        onCommit={onInlineEdit}
+                                        multiline
+                                        rows={3}
+                                    />
+                                    {inlineEditable && onInlineListRemove && items.length > 1 ? (
+                                        <button
+                                            type="button"
+                                            className={styles.listRowAction}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onInlineListRemove(`customSections.${index}.items`, itemIndex);
+                                            }}
+                                        >
+                                            删除
+                                        </button>
+                                    ) : null}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+        </PreviewHot>
+    );
+}
+
 const headerAlignClass = {
     left: styles.headerAlignLeft,
     center: styles.headerAlignCenter,
@@ -470,7 +604,7 @@ const Index: React.FC<ResumeViewProps> = (props) => {
         ...resume
     } = props;
     const { mode: appAppearance } = useAppearance();
-    const { contact, sectionOrder, hiddenSections, theme: themeRaw } = resume;
+    const { contact, sectionOrder, hiddenSections, theme: themeRaw, customSections } = resume;
     const { name, phone, email, career, age } = contact;
     const ageLabel = renderAge(age);
     const hiddenSectionSet = new Set(hiddenSections ?? []);
@@ -572,8 +706,25 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                 )}
             </header>
 
-            {bodyOrder.map((id) =>
-                renderBodySection(
+            {bodyOrder.map((id) => {
+                if (isCustomSectionRef(id)) {
+                    const customIndex = (customSections ?? []).findIndex(
+                        (section) => section.id === id.slice('custom:'.length),
+                    );
+                    const section = customIndex >= 0 ? customSections?.[customIndex] : undefined;
+                    return section
+                        ? renderCustomSection(
+                              section,
+                              customIndex,
+                              !!previewInteractive,
+                              !!inlineEditable,
+                              onPreviewFieldRequest,
+                              onInlineFieldChange,
+                              onInlineListRemove,
+                          )
+                        : null;
+                }
+                return renderBodySection(
                     id,
                     resume,
                     !!previewInteractive,
@@ -581,8 +732,8 @@ const Index: React.FC<ResumeViewProps> = (props) => {
                     onPreviewFieldRequest,
                     onInlineFieldChange,
                     onInlineListRemove,
-                ),
-            )}
+                );
+            })}
         </div>
     );
 };
@@ -593,8 +744,9 @@ function WorkBlock(props: {
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
     onInlineListRemove?: (path: string, index: number) => void;
+    techStackLabel: string;
 }) {
-    const { job, index, inlineEditable, onInlineEdit, onInlineListRemove } = props;
+    const { job, index, inlineEditable, onInlineEdit, onInlineListRemove, techStackLabel } = props;
     if (!hasWorkContent(job)) return null;
     const bullets = visibleIndexedListItems(job.bullets);
     return (
@@ -667,7 +819,7 @@ function WorkBlock(props: {
             )}
             {hasText(job.techStack) && !job.hideTechStack && (
                 <p className={styles.techLine}>
-                    <span className={styles.techLabel}>主要技术栈：</span>
+                    <span className={styles.techLabel}>{techStackLabel}：</span>
                     <InlineEditableText
                         active={inlineEditable}
                         formPath={`workHistory.${index}.techStack`}
@@ -688,8 +840,13 @@ function ProjectBlock(props: {
     inlineEditable: boolean;
     onInlineEdit?: (formPath: string, value: string) => void;
     onInlineListRemove?: (path: string, index: number) => void;
+    labels: {
+        introduction: string;
+        mainWork: string;
+        results: string;
+    };
 }) {
-    const { project, index, inlineEditable, onInlineEdit, onInlineListRemove } = props;
+    const { project, index, inlineEditable, onInlineEdit, onInlineListRemove, labels } = props;
     if (!hasProjectContent(project)) return null;
     const resultsList = visibleIndexedListItems(normalizeProjectResults(project.results));
     const mainWorkList = visibleIndexedListItems(project.mainWork);
@@ -721,7 +878,7 @@ function ProjectBlock(props: {
             </div>
             {hasText(project.introduction) && (
                 <>
-                    <div className={styles.subLabel}>项目介绍：</div>
+                    <div className={styles.subLabel}>{labels.introduction}：</div>
                     <p className={styles.paragraph}>
                         <InlineEditableText
                             active={inlineEditable}
@@ -738,7 +895,7 @@ function ProjectBlock(props: {
             )}
             {mainWorkList.length > 0 && (
                 <>
-                    <div className={styles.subLabel}>主要工作：</div>
+                    <div className={styles.subLabel}>{labels.mainWork}：</div>
                     <ol className={styles.numbered}>
                         {mainWorkList.map(({ item: m, index: workIndex }) => (
                             <li key={workIndex} className={styles.listRow}>
@@ -772,7 +929,7 @@ function ProjectBlock(props: {
             )}
             {resultsList.length > 0 && (
                 <>
-                    <div className={styles.subLabel}>项目成果：</div>
+                    <div className={styles.subLabel}>{labels.results}：</div>
                     <ul className={styles.squareList}>
                         {resultsList.map(({ item: r, index: resultIndex }) => (
                             <li key={resultIndex} className={styles.listRow}>

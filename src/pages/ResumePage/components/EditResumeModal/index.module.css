@@ -63,3 +63,7 @@
     color: var(--sr-text-muted);
     background: var(--sr-surface);
 }
+
+.sectionAddBtn {
+    margin-top: 0.625rem;
+}

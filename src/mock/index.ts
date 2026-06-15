@@ -173,6 +173,36 @@ export const MOCK_RESUME: ResumeProps = {
     workHistory: [WH_EXAMPLE],
     projectExperience: [PJ_COLLAB, PJ_DEVICE],
     skills: SKILLS_DEFAULT,
+    sectionTitles: {
+        workHistory: "工作经历",
+        projectExperience: "项目经历",
+    },
+    sectionLabels: {
+        "projectExperience.mainWork": "主要工作",
+        "projectExperience.results": "项目成果",
+    },
+    customSections: [
+        {
+            id: "certifications",
+            title: "证书与奖项",
+            displayMode: "plain",
+            items: [
+                { value: "2024 年获得公司年度优秀员工。" },
+                { value: "通过 AWS Certified Developer Associate。" },
+            ],
+        },
+        {
+            id: "open-source",
+            title: "开源经历",
+            displayMode: "titled",
+            items: [
+                {
+                    title: "simple-resume",
+                    description: "维护在线简历编辑器，支持预览编辑、主题和本地导入导出。",
+                },
+            ],
+        },
+    ],
 };
 
 export const MOCK_RESUME_1: ResumeProps = {

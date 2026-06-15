@@ -192,6 +192,16 @@
     color: var(--resume-h3);
 }
 
+.customTitledItem {
+    margin-bottom: 0.8rem;
+}
+
+.customItemTitle {
+    margin-bottom: 0.2rem;
+    font-weight: 700;
+    color: var(--resume-h3);
+}
+
 .paragraph {
     margin: 0 0 0.5rem;
     color: var(--resume-text-softer);

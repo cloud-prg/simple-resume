@@ -5,27 +5,30 @@ import schema, {
     pickResumeFormRootSection,
     type ResumeFormRootKey,
 } from './schema';
-import type { ResumeBodySectionId, ResumeProps } from '@/types';
+import type { CustomResumeSection, ResumeBodySectionId, ResumeProps, ResumeSectionId } from '@/types';
 import { Modal, Button, message, Select, ColorPicker, Input } from 'antd';
 import { MOCK_TEMPLATE_LIST } from '@/mock';
-import { DEFAULT_SECTION_ORDER, migrateResume, migrateResumeList } from '@/util/resumeMigrate';
+import {
+    DEFAULT_SECTION_ORDER,
+    DEFAULT_SECTION_TITLES,
+    migrateResume,
+    migrateResumeList,
+} from '@/util/resumeMigrate';
 import modalStyles from './index.module.css';
 
-const SECTION_LABEL: Record<ResumeBodySectionId, string> = {
-    skills: '个人优势',
-    workHistory: '工作经历',
-    projectExperience: '项目经历',
-    education: '教育经历',
-};
+const FIXED_SECTION_IDS = new Set<ResumeBodySectionId>(DEFAULT_SECTION_ORDER);
 
 const ROOT_SECTION_LABEL: Record<ResumeFormRootKey, string> = {
     name: '模板名称',
     theme: '版式与主题',
+    sectionTitles: '一级标题',
+    sectionLabels: '二级标签',
     contact: '个人信息',
     education: '教育经历',
     workHistory: '工作经历',
     projectExperience: '项目经历',
     skills: '个人优势',
+    customSections: '自定义模块',
 };
 
 /** 局部保存：把当前表单片段合并回完整简历 */
@@ -40,6 +43,10 @@ function mergeResumePartial(
         out.name = patch.name;
     } else if (root === 'theme' && patch.theme && typeof patch.theme === 'object') {
         out.theme = { ...b.theme, ...(patch.theme as ResumeProps['theme']) };
+    } else if (root === 'sectionTitles' && patch.sectionTitles && typeof patch.sectionTitles === 'object') {
+        out.sectionTitles = { ...b.sectionTitles, ...(patch.sectionTitles as ResumeProps['sectionTitles']) };
+    } else if (root === 'sectionLabels' && patch.sectionLabels && typeof patch.sectionLabels === 'object') {
+        out.sectionLabels = { ...b.sectionLabels, ...(patch.sectionLabels as ResumeProps['sectionLabels']) };
     } else if (root === 'contact' && patch.contact && typeof patch.contact === 'object') {
         out.contact = { ...b.contact, ...(patch.contact as ResumeProps['contact']) };
     } else if (root === 'education' && patch.education && typeof patch.education === 'object') {
@@ -50,6 +57,8 @@ function mergeResumePartial(
         out.projectExperience = patch.projectExperience as ResumeProps['projectExperience'];
     } else if (root === 'skills' && Array.isArray(patch.skills)) {
         out.skills = patch.skills as ResumeProps['skills'];
+    } else if (root === 'customSections' && Array.isArray(patch.customSections)) {
+        out.customSections = patch.customSections as ResumeProps['customSections'];
     }
     return migrateResume(out);
 }
@@ -84,6 +93,30 @@ const formWidgets = {
     colorHex: ColorHexField,
 };
 
+function customSectionRef(id: string): `custom:${string}` {
+    return `custom:${id}`;
+}
+
+function isFixedSectionId(id: ResumeSectionId): id is ResumeBodySectionId {
+    return FIXED_SECTION_IDS.has(id as ResumeBodySectionId);
+}
+
+function getSectionLabel(id: ResumeSectionId, customSections: CustomResumeSection[]): string {
+    if (isFixedSectionId(id)) return DEFAULT_SECTION_TITLES[id];
+    const customId = id.slice('custom:'.length);
+    return customSections.find((section) => section.id === customId)?.title || '自定义模块';
+}
+
+function createCustomSection(index: number): CustomResumeSection {
+    const id = `custom-${Date.now().toString(36)}-${index + 1}`;
+    return {
+        id,
+        title: '自定义模块',
+        displayMode: 'plain',
+        items: [{ value: '', title: '', description: '' }],
+    };
+}
+
 export type EditResumeModalHandle = {
     /** 打开编辑弹窗；从预览进入时可带字段路径，仅展示对应区块 */
     openEdit: (options?: { scrollToField?: string }) => void;
@@ -101,8 +134,9 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
     const { mode = 'edit' } = props;
     const form = useForm();
     const [open, setOpen] = React.useState(false);
-    const [sectionOrder, setSectionOrder] = React.useState<ResumeBodySectionId[]>([...DEFAULT_SECTION_ORDER]);
-    const [hiddenSections, setHiddenSections] = React.useState<ResumeBodySectionId[]>([]);
+    const [sectionOrder, setSectionOrder] = React.useState<ResumeSectionId[]>([...DEFAULT_SECTION_ORDER]);
+    const [hiddenSections, setHiddenSections] = React.useState<ResumeSectionId[]>([]);
+    const [customSections, setCustomSections] = React.useState<CustomResumeSection[]>([]);
     /** 从预览点入时为某一顶层区块；null 表示完整表单 */
     const [focusRoot, setFocusRoot] = React.useState<ResumeFormRootKey | null>(null);
     const pendingScrollPath = React.useRef<string | undefined>();
@@ -136,10 +170,42 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
         });
     };
 
-    const toggleSectionHidden = (id: ResumeBodySectionId) => {
+    const toggleSectionHidden = (id: ResumeSectionId) => {
         setHiddenSections((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
         );
+    };
+
+    const syncCustomSections = (nextSections: CustomResumeSection[]) => {
+        const normalized = migrateResume({ ...props.data, customSections: nextSections }).customSections ?? [];
+        setCustomSections(normalized);
+        form.setValues({
+            ...(form.getValues() as Record<string, unknown>),
+            customSections: normalized,
+        });
+        setSectionOrder((prev) => {
+            const refs = new Set(normalized.map((section) => customSectionRef(section.id)));
+            const next = prev.filter((id) => isFixedSectionId(id) || refs.has(id));
+            for (const section of normalized) {
+                const ref = customSectionRef(section.id);
+                if (!next.includes(ref)) next.push(ref);
+            }
+            return next;
+        });
+        setHiddenSections((prev) =>
+            prev.filter((id) => isFixedSectionId(id) || refsFromSections(normalized).has(id)),
+        );
+    };
+
+    const refsFromSections = (sections: CustomResumeSection[]) =>
+        new Set<ResumeSectionId>(sections.map((section) => customSectionRef(section.id)));
+
+    const addCustomSection = () => {
+        syncCustomSections([...customSections, createCustomSection(customSections.length)]);
+    };
+
+    const removeCustomSection = (id: string) => {
+        syncCustomSections(customSections.filter((section) => section.id !== id));
     };
 
     const localResumeList = migrateResumeList(JSON?.parse?.(localStorage.getItem('resumeList') || '[]'));
@@ -217,6 +283,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                                 form.setValues(m);
                                 setSectionOrder(m.sectionOrder ?? [...DEFAULT_SECTION_ORDER]);
                                 setHiddenSections(m.hiddenSections ?? []);
+                                setCustomSections(m.customSections ?? []);
                             }}
                         >
                             {templateList.map((item, index) => (
@@ -261,6 +328,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                         form.setValues(m);
                         setSectionOrder(m.sectionOrder ?? [...DEFAULT_SECTION_ORDER]);
                         setHiddenSections(m.hiddenSections ?? []);
+                        setCustomSections(m.customSections ?? []);
                         const path = pendingScrollPath.current;
                         pendingScrollPath.current = undefined;
                         if (path) {
@@ -269,6 +337,7 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                     } else {
                         setSectionOrder([...DEFAULT_SECTION_ORDER]);
                         setHiddenSections([]);
+                        setCustomSections([]);
                     }
                 }}
                 destroyOnClose
@@ -346,7 +415,9 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                                     key={id}
                                     className={`${modalStyles.sectionOrderRow} ${hiddenSections.includes(id) ? modalStyles.sectionOrderRowHidden : ''}`}
                                 >
-                                    <span className="min-w-0 flex-1 truncate">{SECTION_LABEL[id]}</span>
+                                    <span className="min-w-0 flex-1 truncate">
+                                        {getSectionLabel(id, customSections)}
+                                    </span>
                                     {hiddenSections.includes(id) && (
                                         <span className={modalStyles.sectionHiddenBadge}>已隐藏</span>
                                     )}
@@ -364,9 +435,22 @@ const EditResumeModal = forwardRef<EditResumeModalHandle, IProps>(function EditR
                                     <Button size="small" type="link" onClick={() => toggleSectionHidden(id)}>
                                         {hiddenSections.includes(id) ? '显示' : '隐藏'}
                                     </Button>
+                                    {!isFixedSectionId(id) && (
+                                        <Button
+                                            size="small"
+                                            type="link"
+                                            danger
+                                            onClick={() => removeCustomSection(id.slice('custom:'.length))}
+                                        >
+                                            删除
+                                        </Button>
+                                    )}
                                 </div>
                             ))}
                         </div>
+                        <Button size="small" type="dashed" className={modalStyles.sectionAddBtn} onClick={addCustomSection}>
+                            新增自定义模块
+                        </Button>
                     </div>
                 )}
                 <FormRender

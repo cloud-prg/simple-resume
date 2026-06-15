@@ -71,6 +71,66 @@ const resumeFormSchema = {
                 },
             },
         },
+        sectionTitles: {
+            type: "object",
+            title: "一级标题",
+            properties: {
+                skills: {
+                    title: "个人优势",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：个人优势",
+                },
+                workHistory: {
+                    title: "工作经历",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：工作经历",
+                },
+                projectExperience: {
+                    title: "项目经历",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：项目经历",
+                },
+                education: {
+                    title: "教育经历",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：教育经历",
+                },
+            },
+        },
+        sectionLabels: {
+            type: "object",
+            title: "二级标签",
+            properties: {
+                "workHistory.techStack": {
+                    title: "主要技术栈",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：主要技术栈",
+                },
+                "projectExperience.introduction": {
+                    title: "项目介绍",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：项目介绍",
+                },
+                "projectExperience.mainWork": {
+                    title: "主要工作",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：主要工作",
+                },
+                "projectExperience.results": {
+                    title: "项目成果",
+                    type: "string",
+                    widget: "input",
+                    placeholder: "默认：项目成果",
+                },
+            },
+        },
         contact: {
             type: "object",
             title: "个人信息",
@@ -178,6 +238,9 @@ const resumeFormSchema = {
             span: 24,
             items: {
                 type: "object",
+                title: "工作经历",
+                widget: "collapse",
+                props: { collapsed: true },
                 column: 1,
                 properties: {
                     company: {
@@ -229,6 +292,9 @@ const resumeFormSchema = {
             span: 24,
             items: {
                 type: "object",
+                title: "项目经历",
+                widget: "collapse",
+                props: { collapsed: true },
                 column: 1,
                 properties: {
                     name: {
@@ -277,6 +343,68 @@ const resumeFormSchema = {
             props: { hasBackground: true },
             items: listItemLong,
         },
+        customSections: {
+            type: "array",
+            title: "自定义模块",
+            span: 24,
+            items: {
+                type: "object",
+                column: 1,
+                properties: {
+                    id: {
+                        title: "模块 ID",
+                        type: "string",
+                        widget: "input",
+                        placeholder: "自动生成，可用于导入导出稳定识别",
+                    },
+                    title: {
+                        title: "模块标题",
+                        type: "string",
+                        widget: "input",
+                        placeholder: "如：证书与奖项",
+                    },
+                    displayMode: {
+                        title: "展示模式",
+                        type: "string",
+                        widget: "select",
+                        enum: ["plain", "titled"],
+                        enumNames: ["无标题列表", "标题模式"],
+                        default: "plain",
+                    },
+                    items: {
+                        title: "条目",
+                        type: "array",
+                        props: { hasBackground: true },
+                        items: {
+                            type: "object",
+                            column: 1,
+                            properties: {
+                                value: {
+                                    title: "无标题内容",
+                                    type: "string",
+                                    widget: "textArea",
+                                    props: { rows: 3, style: { width: "100%" } },
+                                    placeholder: "无标题列表模式展示",
+                                },
+                                title: {
+                                    title: "条目标题",
+                                    type: "string",
+                                    widget: "input",
+                                    placeholder: "标题模式展示",
+                                },
+                                description: {
+                                    title: "条目说明",
+                                    type: "string",
+                                    widget: "textArea",
+                                    props: { rows: 3, style: { width: "100%" } },
+                                    placeholder: "标题模式展示",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
 };
 
@@ -284,20 +412,26 @@ const resumeFormSchema = {
 export type ResumeFormRootKey =
     | "name"
     | "theme"
+    | "sectionTitles"
+    | "sectionLabels"
     | "contact"
     | "education"
     | "workHistory"
     | "projectExperience"
-    | "skills";
+    | "skills"
+    | "customSections";
 
 const ROOT_KEYS = new Set<string>([
     "name",
     "theme",
+    "sectionTitles",
+    "sectionLabels",
     "contact",
     "education",
     "workHistory",
     "projectExperience",
     "skills",
+    "customSections",
 ]);
 
 /** 将表单字段路径映射为 schema 顶层 key；无法识别时返回 null（展示完整表单） */

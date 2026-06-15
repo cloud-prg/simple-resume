@@ -52,8 +52,43 @@ export type ExperienceType = Partial<{
     summary: { value: string }[];
 }>;
 
-/** 简历正文模块（不含页眉个人信息），顺序可配置 */
+/** 固定简历正文模块（不含页眉个人信息） */
 export type ResumeBodySectionId = 'skills' | 'workHistory' | 'projectExperience' | 'education';
+
+/** 自定义正文模块在排序/隐藏列表中的引用 */
+export type CustomResumeSectionRef = `custom:${string}`;
+
+/** 简历正文模块（固定模块 + 自定义模块），顺序可配置 */
+export type ResumeSectionId = ResumeBodySectionId | CustomResumeSectionRef;
+
+/** 固定模块中允许自定义的预览可见二级标签 */
+export type ResumeSectionLabelKey =
+    | 'workHistory.techStack'
+    | 'projectExperience.introduction'
+    | 'projectExperience.mainWork'
+    | 'projectExperience.results';
+
+export type ResumeSectionTitleMap = Partial<Record<ResumeBodySectionId, string>>;
+
+export type ResumeSectionLabelMap = Partial<Record<ResumeSectionLabelKey, string>>;
+
+export type CustomSectionDisplayMode = 'plain' | 'titled';
+
+export interface CustomResumeSectionItem {
+    /** 无标题列表模式展示 */
+    value?: string;
+    /** 标题模式展示 */
+    title?: string;
+    /** 标题模式展示 */
+    description?: string;
+}
+
+export interface CustomResumeSection {
+    id: string;
+    title: string;
+    displayMode: CustomSectionDisplayMode;
+    items: CustomResumeSectionItem[];
+}
 
 /** 页眉个人信息区域水平对齐 */
 export type ResumeHeaderLayout = 'left' | 'center' | 'right';
@@ -78,10 +113,16 @@ export interface ResumeProps {
     projectExperience: ProjectExperienceType[];
     /** 个人优势，每条一行展示 */
     skills: { value: string }[];
+    /** 固定模块一级标题覆盖，空值由迁移逻辑清理并回退默认标题 */
+    sectionTitles?: ResumeSectionTitleMap;
+    /** 固定模块二级标签覆盖，空值由迁移逻辑清理并回退默认标签 */
+    sectionLabels?: ResumeSectionLabelMap;
+    /** 用户自定义正文模块 */
+    customSections?: CustomResumeSection[];
     /** 各经历区块在预览中的先后，缺省时由迁移逻辑补全 */
-    sectionOrder?: ResumeBodySectionId[];
+    sectionOrder?: ResumeSectionId[];
     /** 在预览与打印中隐藏的正文模块；表单数据仍保留 */
-    hiddenSections?: ResumeBodySectionId[];
+    hiddenSections?: ResumeSectionId[];
     /** 标题颜色与页眉布局等展示配置 */
     theme?: ResumeTheme;
     /** @deprecated 旧字段，迁移用 */
