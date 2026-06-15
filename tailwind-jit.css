@@ -562,6 +562,10 @@ video {
   visibility: visible;
 }
 
+.collapse {
+  visibility: collapse;
+}
+
 .absolute {
   position: absolute;
 }
