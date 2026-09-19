@@ -32,7 +32,7 @@
  * 说明：当前项目也支持浏览器端直连用户自填的 OpenAI 兼容接口；该契约仅保留给 Vite 开发 mock 使用。
  */
 
-export type AssistantProviderId = "mock";
+export type AssistantProviderId = "mock" | "resume-json-mock";
 
 export type PrepareAssistantBody = {
     provider: AssistantProviderId;

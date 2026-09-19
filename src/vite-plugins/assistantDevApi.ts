@@ -69,17 +69,31 @@ export function assistantDevApiPlugin(): Plugin {
                         (res as { flushHeaders: () => void }).flushHeaders();
                     }
 
-                    const header = `[${session.provider}] 开发占位回复：\n\n`;
-                    const tail =
-                        "\n\n（生产环境请部署同源代理，将请求转发至 MiniMax / 通义千问等 API，并设置 VITE_ASSISTANT_ENABLED。）";
-                    const text = `${header}${session.prompt.slice(0, 2000)}${session.prompt.length > 2000 ? "…" : ""}${tail}`;
+                    const resumeJsonMatch = session.prompt.match(
+                        /CURRENT_RESUME_JSON_BEGIN\n([\s\S]*?)\nCURRENT_RESUME_JSON_END/,
+                    );
+                    let text = "";
+                    if (session.provider === "resume-json-mock" && resumeJsonMatch?.[1]) {
+                        try {
+                            text = JSON.stringify(JSON.parse(resumeJsonMatch[1]), null, 2);
+                        } catch {
+                            text = "{}";
+                        }
+                    } else {
+                        const header = `[${session.provider}] 开发占位回复：\n\n`;
+                        const tail =
+                            "\n\n（生产环境请部署同源代理，将请求转发至 MiniMax / 通义千问等 API，并设置 VITE_ASSISTANT_ENABLED。）";
+                        text = `${header}${session.prompt.slice(0, 2000)}${session.prompt.length > 2000 ? "…" : ""}${tail}`;
+                    }
                     let i = 0;
+                    const chunkSize = session.provider === "resume-json-mock" ? 240 : 3;
+                    const delay = session.provider === "resume-json-mock" ? 2 : 18;
                     const tick = () => {
                         if (i < text.length) {
-                            const delta = text.slice(i, i + 3);
+                            const delta = text.slice(i, i + chunkSize);
                             i += delta.length;
                             res.write(`data: ${JSON.stringify({ delta })}\n\n`);
-                            setTimeout(tick, 18);
+                            setTimeout(tick, delay);
                         } else {
                             res.write(`event: done\ndata: {}\n\n`);
                             res.end();

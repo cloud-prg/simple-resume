@@ -2,8 +2,10 @@ import Resume from "@/components/Resume";
 import { MOCK_RESUME, MOCK_RESUME_LIST } from "@/mock";
 import React, { useMemo, useRef } from "react";
 import EditResumeModal, { type EditResumeModalHandle } from "./components/EditResumeModal";
-import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
+import { Button, Input, Modal, Popconfirm, Radio, Upload, UploadFile, message } from 'antd'
+import type { InputRef } from 'antd';
 import GithubCorner from "@/components/GithubCorner";
+import { AiImportModal } from "@/components/AiImportModal";
 import { GITHUB_URL } from "@/constant";
 /** 与 Resume 使用的 index.module.css 同源，编译后带 hash 的类名与 innerHTML 一致，用于打印窗口内联注入 */
 import resumeCssForPrint from '@/components/Resume/index.module.css?inline';
@@ -11,9 +13,8 @@ import themeCssForPrint from '@/styles/theme.css?raw';
 import { ResumeProps } from "@/types";
 import { DeleteOutlined, ExportOutlined, ImportOutlined, RobotOutlined } from "@ant-design/icons";
 import { AppearanceSwitcher } from "@/components/AppearanceSwitcher";
-import { AssistantModal } from "@/components/AssistantModal";
 import styles from './index.module.css'
-import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
+import { exportResumeFile, importJsonFromTxt, type ResumeExportFormat } from "@/util/file";
 import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
 import { flushSync } from "react-dom";
@@ -48,7 +49,12 @@ const Index = () => {
     );
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [triggerImport, setTriggerImport] = React.useState(false);
-    const [assistantOpen, setAssistantOpen] = React.useState(false);
+    const [exportModalOpen, setExportModalOpen] = React.useState(false);
+    const [aiImportOpen, setAiImportOpen] = React.useState(false);
+    const [exportFormat, setExportFormat] = React.useState<ResumeExportFormat>('json');
+    const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+    const [draftTemplateName, setDraftTemplateName] = React.useState('');
+    const renameInputRef = useRef<InputRef>(null);
 
     const resume = useMemo(() => {
         return resumeList?.[activeIndex] || migrateResume(MOCK_RESUME);
@@ -64,6 +70,15 @@ const Index = () => {
             setTriggerImport(false)
         }
     }, [triggerImport, resumeList.length])
+
+    React.useEffect(() => {
+        if (editingIndex === null) {
+            return;
+        }
+        renameInputRef.current?.focus({
+            cursor: 'all',
+        });
+    }, [editingIndex]);
 
     const handlePrint = () => {
         const printContent = printRef.current;
@@ -120,6 +135,10 @@ const Index = () => {
                 return item;
             })
         })
+    }
+
+    const handleAiImport = (data: ResumeProps) => {
+        setResumeList((prev) => prev.map((item, index) => (index === activeIndex ? migrateResume(data) : item)));
     }
 
     const handleInlineFieldChange = React.useCallback((path: string, value: string) => {
@@ -189,11 +208,46 @@ const Index = () => {
 
     const handleExport = () => {
         try {
-            exportJsonToTxt(resumeList[activeIndex], resumeList[activeIndex].name)
+            exportResumeFile(resumeList[activeIndex], exportFormat, resumeList[activeIndex].name)
             message.success('导出成功');
+            setExportModalOpen(false);
         } catch (e) {
             message.error('导出失败');
         }
+    }
+
+    const handleRenameStart = (itemIndex: number) => {
+        setEditingIndex(itemIndex);
+        setDraftTemplateName(resumeList[itemIndex]?.name || '');
+    }
+
+    const handleRenameFinish = () => {
+        if (editingIndex === null) {
+            return;
+        }
+
+        const nextName = draftTemplateName.trim();
+        const currentIndex = editingIndex;
+        setEditingIndex(null);
+
+        if (!nextName || nextName === resumeList[currentIndex]?.name) {
+            setDraftTemplateName('');
+            return;
+        }
+
+        setResumeList((prev) =>
+            prev.map((item, index) => {
+                if (index !== currentIndex) {
+                    return item;
+                }
+                return {
+                    ...item,
+                    name: nextName,
+                };
+            }),
+        );
+        setDraftTemplateName('');
+        message.success('修改成功');
     }
 
     const handleUploadChange = async (e: UploadChangeParam<UploadFile>) => {
@@ -238,22 +292,22 @@ const Index = () => {
                             <Button type="primary" className="shadow-sm" onClick={handlePrint}>
                                 打印简历
                             </Button>
-                            <Button icon={<RobotOutlined />} onClick={() => setAssistantOpen(true)}>
-                                AI 助手
+                            <Button icon={<RobotOutlined />} onClick={() => setAiImportOpen(true)}>
+                                AI 导入
                             </Button>
-                            <div onClick={handleExport} className={styles.btnOutline}>
+                            <div onClick={() => setExportModalOpen(true)} className={styles.btnOutline}>
                                 <ExportOutlined />
-                                <span>导出 JSON</span>
+                                <span>导出</span>
                             </div>
                             <div className={`${styles["json-upload"]} ${styles.btnOutline}`}>
-                                <Upload accept=".txt" action="" showUploadList={false} onChange={handleUploadChange}>
+                                <Upload accept=".json" action="" showUploadList={false} onChange={handleUploadChange}>
                                     <ImportOutlined />
                                     <span className="ml-1">导入 JSON</span>
                                 </Upload>
                             </div>
                         </div>
                         <p className={styles.hint}>
-                            若打印无响应，请检查浏览器弹窗拦截或换用 Chrome。
+                            AI 导入会把描述或粘贴的文本转换为当前模板；若打印无响应，请检查浏览器弹窗拦截或换用 Chrome。
                         </p>
                     </section>
 
@@ -264,15 +318,32 @@ const Index = () => {
                                 {resumeList.length} 份
                             </span>
                         </div>
+                        <p className={styles.listHint}>双击模板名称可直接重命名</p>
                         <div className={styles.stack}>
                             {resumeList.length > 0 &&
                                 resumeList.map((item, index) => (
                                     <div
                                         className={`group ${styles.listItem} ${activeIndex === index ? styles.listItemActive : ""}`}
                                         key={index}
+                                        title={editingIndex === index ? undefined : '双击可重命名'}
                                         onClick={() => setActiveIndex(index)}
+                                        onDoubleClick={() => handleRenameStart(index)}
                                     >
-                                        <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
+                                        {editingIndex === index ? (
+                                            <Input
+                                                ref={renameInputRef}
+                                                value={draftTemplateName}
+                                                onChange={(event) => setDraftTemplateName(event.target.value)}
+                                                onBlur={handleRenameFinish}
+                                                onPressEnter={() => renameInputRef.current?.blur()}
+                                                onClick={(event) => event.stopPropagation()}
+                                                onDoubleClick={(event) => event.stopPropagation()}
+                                                className={styles.renameInput}
+                                                size="small"
+                                            />
+                                        ) : (
+                                            <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
+                                        )}
                                         {resumeList.length > 1 && (
                                             <Popconfirm
                                                 title="删除模板"
@@ -349,7 +420,44 @@ const Index = () => {
                 </div>
             </main>
 
-            <AssistantModal open={assistantOpen} onClose={() => setAssistantOpen(false)} resume={resume} />
+            <Modal
+                title="选择导出格式"
+                open={exportModalOpen}
+                onOk={handleExport}
+                onCancel={() => setExportModalOpen(false)}
+                okText="导出"
+                cancelText="取消"
+                destroyOnClose
+            >
+                <div className={styles.exportModalBody}>
+                    <Radio.Group
+                        value={exportFormat}
+                        onChange={(event) => setExportFormat(event.target.value as ResumeExportFormat)}
+                    >
+                        <div className={styles.exportOptionList}>
+                            <label className={styles.exportOption}>
+                                <Radio value="txt">TXT 文本格式</Radio>
+                                <span className={styles.exportOptionHint}>适合纯文本查看或复制到其他系统</span>
+                            </label>
+                            <label className={styles.exportOption}>
+                                <Radio value="md">Markdown 格式</Radio>
+                                <span className={styles.exportOptionHint}>适合文档平台、知识库和 README</span>
+                            </label>
+                            <label className={styles.exportOption}>
+                                <Radio value="json">JSON 格式</Radio>
+                                <span className={styles.exportOptionHint}>适合完整备份与再次导入</span>
+                            </label>
+                        </div>
+                    </Radio.Group>
+                </div>
+            </Modal>
+
+            <AiImportModal
+                open={aiImportOpen}
+                resume={resume}
+                onClose={() => setAiImportOpen(false)}
+                onApply={handleAiImport}
+            />
         </div>
     );
 }

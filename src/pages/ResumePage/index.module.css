@@ -213,6 +213,11 @@
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
+.renameInput {
+    margin-right: 0.5rem;
+    flex: 1;
+}
+
 .btnOutline {
     display: flex;
     cursor: pointer;
@@ -270,6 +275,13 @@
     flex: 1;
 }
 
+.listHint {
+    margin: -0.25rem 0 0.75rem;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--sr-text-muted);
+}
+
 .list-item {
     .delete-icon {
         opacity: 0;
@@ -303,4 +315,39 @@
         height: 100%;
         padding: 4px 8px;
     }
+}
+
+.exportModalBody {
+    padding-top: 0.25rem;
+}
+
+.exportOptionList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.exportOption {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--sr-border);
+    background: var(--sr-surface-muted);
+    padding: 0.875rem 1rem;
+    transition:
+        border-color 0.28s ease,
+        background-color 0.28s ease;
+}
+
+.exportOption:hover {
+    border-color: color-mix(in srgb, var(--sr-color-primary) 35%, var(--sr-border));
+    background: color-mix(in srgb, var(--sr-color-primary) 8%, var(--sr-surface-muted));
+}
+
+.exportOptionHint {
+    padding-top: 0.1rem;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--sr-text-secondary);
 }
