@@ -23,3 +23,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# AI agent 工作目录与代码图谱工具环境（非项目资产）
+.venv/
+.hive/
+.superpowers/
+graphify-out/
+
+# repo-scan 审计产物（按需重新生成，不入库）
+scan-output/
+repo-scan-data.md
+repo-scan-report.md
+report.html
