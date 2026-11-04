@@ -2,6 +2,7 @@ import { ResumeProps } from '@/types';
 import { message } from 'antd';
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 import FileSaver from 'file-saver';
+import { parseResumeJsonText } from './resumeJson';
 
 export function exportJsonToTxt(data: ResumeProps, filename = 'data') {
     const json = JSON.stringify(data, null, 2); // 使用2作为缩进，使JSON格式化
@@ -30,14 +31,12 @@ export function importJsonFromTxt(
                 return;
             }
             try {
-                const json = JSON.parse(text);
+                const json = parseResumeJsonText(text);
                 message.success('导入成功');
-                resolve(json);
-                // 在这里处理导入的JSON数据
+                resolve(json as ResumeProps);
             } catch (error) {
                 message.error('无效JSON文件');
                 reject(error);
-                // console.error('Failed to parse JSON', error);
             }
         };
         reader.onerror = function () {
