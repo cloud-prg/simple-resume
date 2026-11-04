@@ -151,9 +151,8 @@ GitHub Pages 部署保持不变：`.github/workflows/deploy-pages.yml` 与 `depl
 
 ### 绑定
 
-`wrangler.jsonc` 已写入：
+`wrangler.jsonc` 已写入 D1 绑定，没有 `account_id`。Pages 项目的 Wrangler 配置不支持该字段。
 
-- 账号：`bbbf35cc99b519983f6d2af9ad970c05`
 - D1 绑定名：`DB`
 - 数据库名：`simple-resume`
 - 数据库 ID：`221a394c-6106-4a97-9566-e28048f516e9`
@@ -180,7 +179,13 @@ Pages 本地开发连的是本地 D1，不能直接打到远程库。
 
 ### 部署
 
-命令行：
+账号不写在 `wrangler.jsonc` 里。使用 Wrangler 登录，或在部署前设置：
+
+```bash
+export CLOUDFLARE_ACCOUNT_ID=bbbf35cc99b519983f6d2af9ad970c05
+```
+
+直接上传：
 
 ```bash
 npm install
