@@ -15,6 +15,7 @@ import { AssistantModal } from "@/components/AssistantModal";
 import styles from './index.module.css'
 import { RESUME_AGENT_PROMPT } from "@/constant/agentPrompt";
 import ImportJsonModal from "./components/ImportJsonModal";
+import CloudResumePanel from "./components/CloudResumePanel";
 import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
 import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
@@ -279,6 +280,7 @@ const Index = () => {
                                 <SnippetsOutlined />
                                 <span>粘贴 JSON</span>
                             </div>
+                            <CloudResumePanel resume={resume} onImport={handlePasteImport} />
                             <div className={styles.btnOutline} onClick={handleCopyAgentPrompt}>
                                 <CopyOutlined />
                                 <span>复制 Agent 提示词</span>
