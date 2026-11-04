@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "simple-resume",
-  "account_id": "bbbf35cc99b519983f6d2af9ad970c05",
   "pages_build_output_dir": "./dist",
   "d1_databases": [
     {
