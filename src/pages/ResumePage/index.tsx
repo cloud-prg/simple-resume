@@ -9,10 +9,12 @@ import { GITHUB_URL } from "@/constant";
 import resumeCssForPrint from '@/components/Resume/index.module.css?inline';
 import themeCssForPrint from '@/styles/theme.css?raw';
 import { ResumeProps } from "@/types";
-import { DeleteOutlined, ExportOutlined, ImportOutlined, RobotOutlined } from "@ant-design/icons";
+import { CopyOutlined, DeleteOutlined, ExportOutlined, ImportOutlined, RobotOutlined, SnippetsOutlined } from "@ant-design/icons";
 import { AppearanceSwitcher } from "@/components/AppearanceSwitcher";
 import { AssistantModal } from "@/components/AssistantModal";
 import styles from './index.module.css'
+import { RESUME_AGENT_PROMPT } from "@/constant/agentPrompt";
+import ImportJsonModal from "./components/ImportJsonModal";
 import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
 import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
@@ -49,6 +51,7 @@ const Index = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [triggerImport, setTriggerImport] = React.useState(false);
     const [assistantOpen, setAssistantOpen] = React.useState(false);
+    const [pasteImportOpen, setPasteImportOpen] = React.useState(false);
 
     const resume = useMemo(() => {
         return resumeList?.[activeIndex] || migrateResume(MOCK_RESUME);
@@ -199,11 +202,32 @@ const Index = () => {
     const handleUploadChange = async (e: UploadChangeParam<UploadFile>) => {
         const { status } = e.file;
         if (status === 'uploading') { return; }
-        const res: ResumeProps | string = await importJsonFromTxt(e);
-        if (typeof res === 'object') {
-            handleCreate(migrateResume(res));
-            setTriggerImport(true)
+        try {
+            const res: ResumeProps | string = await importJsonFromTxt(e);
+            if (typeof res === 'object' && res) {
+                handleCreate(migrateResume(res));
+                setTriggerImport(true)
+            }
+        } catch {
+            // importJsonFromTxt 已弹出读取或解析失败提示
         }
+    }
+
+    const handleCopyAgentPrompt = async () => {
+        try {
+            if (!navigator.clipboard?.writeText) {
+                throw new Error('clipboard unavailable');
+            }
+            await navigator.clipboard.writeText(RESUME_AGENT_PROMPT);
+            message.success('提示词已复制，可粘贴到 ChatGPT、Claude 等网页');
+        } catch {
+            message.error('复制失败，请允许剪贴板权限后重试');
+        }
+    }
+
+    const handlePasteImport = (data: Record<string, unknown>) => {
+        handleCreate(migrateResume(data));
+        setTriggerImport(true);
     }
 
     return (
@@ -251,9 +275,17 @@ const Index = () => {
                                     <span className="ml-1">导入 JSON</span>
                                 </Upload>
                             </div>
+                            <div className={styles.btnOutline} onClick={() => setPasteImportOpen(true)}>
+                                <SnippetsOutlined />
+                                <span>粘贴 JSON</span>
+                            </div>
+                            <div className={styles.btnOutline} onClick={handleCopyAgentPrompt}>
+                                <CopyOutlined />
+                                <span>复制 Agent 提示词</span>
+                            </div>
                         </div>
                         <p className={styles.hint}>
-                            若打印无响应，请检查浏览器弹窗拦截或换用 Chrome。
+                            复制提示词到网页 Agent，生成 JSON 后可粘贴导入，或继续用文件导入。若打印无响应，请检查弹窗拦截或换用 Chrome。
                         </p>
                     </section>
 
@@ -350,6 +382,11 @@ const Index = () => {
             </main>
 
             <AssistantModal open={assistantOpen} onClose={() => setAssistantOpen(false)} resume={resume} />
+            <ImportJsonModal
+                open={pasteImportOpen}
+                onClose={() => setPasteImportOpen(false)}
+                onImport={handlePasteImport}
+            />
         </div>
     );
 }

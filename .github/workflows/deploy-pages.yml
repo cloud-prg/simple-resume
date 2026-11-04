@@ -1,0 +1,58 @@
+# 推送到 main 后构建并发布到 gh-pages，替代本地手工执行 deploy.sh。
+# 站点地址：https://cloud-prg.github.io/simple-resume/
+# vite.config.ts 的 base 为 './'，资源使用相对路径，因此会落在 /simple-resume/ 下，
+# 而不是域名根路径。不要改成 base: '/'。
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Point lockfile tarballs at the public npm registry
+        run: |
+          # package-lock.json 的 resolved 指向内网镜像 npm.yonghuivip.com，
+          # GitHub Actions 访问不到。只改 tarball 地址，integrity 保持不变。
+          sed -i \
+            -e 's#http://npm.yonghuivip.com/#https://registry.npmjs.org/#g' \
+            -e 's#%2f#/#g' \
+            -e 's#%2F#/#g' \
+            package-lock.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build -- --base ./
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          enable_jekyll: false
+          commit_message: deploy

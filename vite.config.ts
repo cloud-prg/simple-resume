@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(),
   {
     name: 'generate-tailwind-css',
-    // buildEnd() {
+    // 仅开发态补 public 里的 tailwind 文件。生产构建走 PostCSS，
+    // 不能在 buildStart 里拉起 tailwindcss --watch，否则 vite build 不会退出。
+    apply: 'serve',
     buildStart() {
       autoGenerateTailwindJIT()
     }

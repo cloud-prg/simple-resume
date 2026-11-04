@@ -184,6 +184,7 @@ function fromLegacyExperience(exp: ExperienceType[]): WorkHistoryType[] {
 function normalizeWorkHistoryItem(raw: WorkHistoryType): WorkHistoryType {
     return {
         ...raw,
+        bullets: normalizeProjectResults(raw.bullets),
         hideTechStack: raw.hideTechStack === true,
     };
 }
@@ -213,6 +214,7 @@ export function normalizeProjectResults(raw: unknown): { value: string }[] {
 function normalizeProjectExperienceItem(raw: ProjectExperienceType): ProjectExperienceType {
     return {
         ...raw,
+        mainWork: normalizeProjectResults(raw.mainWork),
         results: normalizeProjectResults(raw.results),
     };
 }
@@ -315,17 +317,7 @@ export function migrateResume(raw: unknown): ResumeProps {
         endDate: normalizeEduMonthString(educationRaw.endDate, 'end'),
     };
 
-    let skills: { value: string }[] = [];
-    if (Array.isArray(d.skills) && d.skills.length) {
-        const first = d.skills[0] as unknown;
-        if (typeof first === 'string') {
-            skills = (d.skills as string[]).map((s) => ({ value: s }));
-        } else {
-            skills = (d.skills as { value: string }[]).map((s) => ({
-                value: typeof s?.value === 'string' ? s.value : '',
-            }));
-        }
-    }
+    const skills = normalizeProjectResults(d.skills);
 
     let workHistory = Array.isArray(d.workHistory)
         ? (d.workHistory as WorkHistoryType[]).map(normalizeWorkHistoryItem)
