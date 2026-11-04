@@ -40,6 +40,7 @@
 - 简历数据默认保存在浏览器本地。
 - 支持导出当前简历为文本文件（JSON 内容）。
 - 支持从导出的文本文件重新导入，便于备份、迁移和版本分支管理。
+- 在 Cloudflare Pages 部署上，可以把当前简历 JSON 保存到 D1，并凭云端 ID 在其他设备加载。GitHub Pages 静态站点仍只使用本地导入导出。
 
 ### 3. 视觉与主题
 
@@ -140,9 +141,72 @@ npm run lint
 - `API Key` 只保存在当前浏览器的 `localStorage` 中，不会写入仓库，也不会跟随简历导出。
 - 如果你的模型服务不允许浏览器直连，更稳妥的做法是通过你自己的后端代理转发请求。
 
+## Cloudflare Pages 与 D1
+
+GitHub Pages 部署保持不变：`.github/workflows/deploy-pages.yml` 与 `deploy.sh` 仍然只发布 Vite 的 `dist/`。Cloudflare 是额外的托管和 API 路径。
+
+这里选用 **Cloudflare Pages Functions**（`functions/`），而不是 Workers Static Assets。原因是应用本身就是 Vite 静态 SPA，路由使用 `createHashRouter`，不需要单独的资源 Worker。`wrangler.jsonc` 的 `pages_build_output_dir` 指向同一个 `dist/`，因此两套托管可以共用 `npm run build` 的产物。
+
+`vite.config.ts` 的 `base` 保持相对路径 `./`。它在 GitHub Pages 的 `/simple-resume/` 子路径和 Cloudflare Pages 站点根路径上都能加载资源，不需要额外的 `VITE_*` 变量。不要把 `base` 改成 `/`，否则现有 GitHub Pages 的资源路径会失效。
+
+### 绑定
+
+`wrangler.jsonc` 已写入：
+
+- 账号：`bbbf35cc99b519983f6d2af9ad970c05`
+- D1 绑定名：`DB`
+- 数据库名：`simple-resume`
+- 数据库 ID：`221a394c-6106-4a97-9566-e28048f516e9`
+- 预览部署使用同一套已创建的数据库
+
+远程表结构已经建好。仓库里的 `schema.sql` 供本地开发和对照，不需要再创建远程数据库。本地初始化：
+
+```bash
+npx wrangler d1 execute simple-resume --local --file=schema.sql
+```
+
+Pages 本地开发连的是本地 D1，不能直接打到远程库。
+
+### 接口
+
+同源 JSON，不需要登录：
+
+- `GET /api/resumes`：仅用于检测接口是否存在，返回 `{ "ok": true }`，不会列出简历。
+- `POST /api/resumes`：创建记录，返回 `id` 与 `edit_token`。
+- `GET /api/resumes/:id`：按 ID 读取简历，不返回 `edit_token`。
+- `PUT /api/resumes/:id`：请求头 `X-Edit-Token`（或 body 里的 `edit_token`）匹配后更新。
+
+请求体超过约 1MB 会拒绝。页面把最近一次的 `id` 和 `edit_token` 放在 `localStorage` 键 `simple-resume.cloud-resume` 中，因此同一浏览器可以更新；其他设备只要有 ID 就能加载。纯静态站点请求不到该接口时，按钮会提示需要 Cloudflare Pages，本地导入导出和 Agent 提示词不受影响。
+
+### 部署
+
+命令行：
+
+```bash
+npm install
+npm run build
+npx wrangler pages deploy dist --project-name simple-resume
+```
+
+也可以用 Git 连接 Cloudflare Pages（需要 V2 build system，这样才会读取 `wrangler.jsonc` 里的 D1 绑定）：
+
+- 构建命令：`npm run build`
+- 输出目录：`dist`
+- 根目录：仓库根目录
+
+本地同时预览静态页和 Functions：
+
+```bash
+npm run build
+npm run pages:dev
+```
+
 ## 目录结构
 
 ```text
+functions/                       # Cloudflare Pages Functions，/api/resumes
+schema.sql                       # D1 表结构（远程库已应用）
+wrangler.jsonc                   # Pages 输出目录与 D1 绑定
 src/
 ├── components/
 │   ├── AssistantModal/          # AI 助手弹窗

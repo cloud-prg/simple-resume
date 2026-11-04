@@ -238,6 +238,10 @@
     background: color-mix(in srgb, var(--sr-color-primary) 8%, var(--sr-surface-muted));
 }
 
+.btnMuted {
+    opacity: 0.72;
+}
+
 .btnDashed {
     display: flex;
     cursor: pointer;
@@ -263,6 +267,7 @@
     font-size: 11px;
     line-height: 1.6;
     color: var(--sr-text-muted);
+    overflow-wrap: anywhere;
 }
 
 .sectionGrow {

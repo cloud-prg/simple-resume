@@ -10,6 +10,7 @@ lerna-debug.log*
 .vite
 node_modules
 dist
+.wrangler
 dist-ssr
 *.local
 
