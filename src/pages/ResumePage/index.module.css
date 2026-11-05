@@ -15,6 +15,8 @@
     width: 260px;
     flex-shrink: 0;
     flex-direction: column;
+    min-height: 0;
+    position: relative;
     border-right: 1px solid var(--sr-border);
     background: var(--sr-surface);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
@@ -67,13 +69,64 @@
     letter-spacing: 0.08em;
 }
 
-.sidebarScroll {
+.sidebarBody {
     flex: 1;
-    overflow-y: auto;
-    padding: 1.25rem 1rem;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+}
+
+.opsPane {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem 1rem 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sr-border-strong) transparent;
+}
+
+.templatesDock {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 10.5rem;
+    max-height: min(42vh, 18rem);
+    overflow: hidden;
+    border-top: 1px solid var(--sr-border);
+    padding: 0.75rem 1rem 1rem;
+    background: var(--sr-surface);
+}
+
+.templatesDock .sectionHeadingRow {
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.templateList {
+    flex: 1 1 auto;
+    min-height: 2.75rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sr-border-strong) transparent;
+}
+
+.opsPane::-webkit-scrollbar,
+.templateList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.opsPane::-webkit-scrollbar-thumb,
+.templateList::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--sr-border-strong);
+}
+
+.templateCreate {
+    flex-shrink: 0;
 }
 
 .sectionHeading {
@@ -105,6 +158,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+
+.stack > :global(.ant-btn) {
+    width: 100%;
 }
 
 .main {
@@ -270,9 +327,54 @@
     overflow-wrap: anywhere;
 }
 
-.sectionGrow {
-    min-height: 0;
-    flex: 1;
+.cloudIdLine {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    margin-top: 0.65rem;
+    margin-bottom: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--sr-text-muted);
+    white-space: nowrap;
+}
+
+.cloudIdLabel {
+    flex-shrink: 0;
+}
+
+.cloudIdValue {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--sr-text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.cloudIdCopy {
+    flex-shrink: 0;
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    padding: 0 0.1rem;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--sr-color-primary);
+    cursor: pointer;
+}
+
+.cloudIdCopy:hover {
+    color: var(--sr-color-primary-hover);
+}
+
+.hiddenFileTrigger {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
 }
 
 .list-item {

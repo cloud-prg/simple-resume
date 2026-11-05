@@ -12,7 +12,6 @@ import {
     type CloudCredentials,
 } from '@/util/cloudResume';
 import type { ResumeProps } from '@/types';
-import { CloudDownloadOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import { Button, Input, Modal, Typography, message } from 'antd';
 import React from 'react';
 import styles from '../../index.module.css';
@@ -20,7 +19,18 @@ import styles from '../../index.module.css';
 type CloudResumePanelProps = {
     resume: ResumeProps;
     onImport: (data: Record<string, unknown>) => void;
+    onBusyChange?: (busy: boolean) => void;
 };
+
+export type CloudResumePanelHandle = {
+    save: () => void;
+    openLoad: () => void;
+};
+
+function compactCloudId(id: string): string {
+    if (id.length <= 14) return id;
+    return `${id.slice(0, 8)}…${id.slice(-4)}`;
+}
 
 type CloudAvailability = 'checking' | 'ready' | 'unavailable';
 
@@ -40,10 +50,13 @@ function asResumeRecord(payload: unknown): Record<string, unknown> | null {
     return isResumeLikeObject(value) ? value : null;
 }
 
-const CloudResumePanel: React.FC<CloudResumePanelProps> = ({ resume, onImport }) => {
+const CloudResumePanel = React.forwardRef<CloudResumePanelHandle, CloudResumePanelProps>(function CloudResumePanel(
+    { resume, onImport, onBusyChange },
+    ref,
+) {
     const [availability, setAvailability] = React.useState<CloudAvailability>('checking');
     const [credentials, setCredentials] = React.useState<CloudCredentials | null>(() => readCloudCredentials());
-    const [saving, setSaving] = React.useState(false);
+    const saveLock = React.useRef(false);
     const [loadOpen, setLoadOpen] = React.useState(false);
     const [loadId, setLoadId] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -78,6 +91,7 @@ const CloudResumePanel: React.FC<CloudResumePanelProps> = ({ resume, onImport })
     };
 
     const handleSave = async () => {
+        if (saveLock.current) return;
         if (availability === 'checking') {
             message.info('正在检测云端接口');
             return;
@@ -88,30 +102,46 @@ const CloudResumePanel: React.FC<CloudResumePanelProps> = ({ resume, onImport })
         }
 
         const existing = readCloudCredentials();
-        if (existing) {
-            const confirmed = await new Promise<boolean>((resolve) => {
-                Modal.confirm({
-                    title: '更新云端简历',
-                    content: `将用当前模板「${resume.name || '未命名'}」覆盖云端 ID ${existing.id}。`,
-                    okText: '更新',
-                    cancelText: '取消',
-                    onOk: () => resolve(true),
-                    onCancel: () => resolve(false),
-                });
-            });
-            if (!confirmed) return;
-        }
-
-        setSaving(true);
+        saveLock.current = true;
+        onBusyChange?.(true);
         try {
+            if (existing) {
+                const confirmed = await new Promise<boolean>((resolve) => {
+                    Modal.confirm({
+                        title: '更新云端简历',
+                        content: `将用当前模板「${resume.name || '未命名'}」覆盖云端 ID ${existing.id}。`,
+                        okText: '更新',
+                        cancelText: '取消',
+                        onOk: () => resolve(true),
+                        onCancel: () => resolve(false),
+                    });
+                });
+                if (!confirmed) return;
+            }
+
             await persist(existing);
             message.success(existing ? '云端简历已更新' : '已保存到云端');
         } catch (error) {
             reportSaveError(error, Boolean(existing));
         } finally {
-            setSaving(false);
+            saveLock.current = false;
+            onBusyChange?.(false);
         }
     };
+
+    const actionsRef = React.useRef({
+        save: () => {},
+        openLoad: () => {},
+    });
+    actionsRef.current.save = () => {
+        void handleSave();
+    };
+    actionsRef.current.openLoad = () => setLoadOpen(true);
+
+    React.useImperativeHandle(ref, () => ({
+        save: () => actionsRef.current.save(),
+        openLoad: () => actionsRef.current.openLoad(),
+    }), []);
 
     const reportSaveError = (error: unknown, hadCredentials: boolean) => {
         if (error instanceof CloudApiError && error.status === 401 && hadCredentials) {
@@ -177,26 +207,37 @@ const CloudResumePanel: React.FC<CloudResumePanelProps> = ({ resume, onImport })
         }
     };
 
-    const buttonClass = availability === 'ready' ? styles.btnOutline : `${styles.btnOutline} ${styles.btnMuted}`;
+    const copyCloudId = async () => {
+        if (!credentials) return;
+        try {
+            if (!navigator.clipboard?.writeText) {
+                throw new Error('clipboard unavailable');
+            }
+            await navigator.clipboard.writeText(credentials.id);
+            message.success('云端 ID 已复制');
+        } catch {
+            message.error('复制失败，请允许剪贴板权限后重试');
+        }
+    };
+
+    const showId = availability === 'ready' && Boolean(credentials);
 
     return (
         <>
-            <div className={buttonClass} onClick={saving ? undefined : handleSave}>
-                <CloudUploadOutlined />
-                <span>{saving ? '保存中…' : '保存到云端'}</span>
-            </div>
-            <div className={buttonClass} onClick={() => setLoadOpen(true)}>
-                <CloudDownloadOutlined />
-                <span>从云端加载</span>
-            </div>
             {availability === 'unavailable' && (
                 <p className={styles.hint}>
                     云端保存需要部署到 Cloudflare Pages。当前站点没有 /api/resumes，本地导入导出仍然可用。
                 </p>
             )}
-            {availability === 'ready' && credentials && (
-                <p className={styles.hint}>
-                    本机可更新云端 ID：{credentials.id}
+            {showId && credentials && (
+                <p className={styles.cloudIdLine} title={`本机可更新云端 ID：${credentials.id}`}>
+                    <span className={styles.cloudIdLabel}>本机可更新</span>
+                    <span className={styles.cloudIdValue} aria-label={credentials.id}>
+                        {compactCloudId(credentials.id)}
+                    </span>
+                    <button type="button" className={styles.cloudIdCopy} onClick={copyCloudId}>
+                        复制
+                    </button>
                 </p>
             )}
 
@@ -239,6 +280,6 @@ const CloudResumePanel: React.FC<CloudResumePanelProps> = ({ resume, onImport })
             </Modal>
         </>
     );
-};
+});
 
 export default CloudResumePanel;

@@ -2,20 +2,21 @@ import Resume from "@/components/Resume";
 import { MOCK_RESUME, MOCK_RESUME_LIST } from "@/mock";
 import React, { useMemo, useRef } from "react";
 import EditResumeModal, { type EditResumeModalHandle } from "./components/EditResumeModal";
-import { Button, Popconfirm, Upload, UploadFile, message } from 'antd'
+import { Button, Dropdown, Popconfirm, Upload, UploadFile, message } from 'antd'
+import type { MenuProps } from 'antd'
 import GithubCorner from "@/components/GithubCorner";
 import { GITHUB_URL } from "@/constant";
 /** 与 Resume 使用的 index.module.css 同源，编译后带 hash 的类名与 innerHTML 一致，用于打印窗口内联注入 */
 import resumeCssForPrint from '@/components/Resume/index.module.css?inline';
 import themeCssForPrint from '@/styles/theme.css?raw';
 import { ResumeProps } from "@/types";
-import { CopyOutlined, DeleteOutlined, ExportOutlined, ImportOutlined, RobotOutlined, SnippetsOutlined } from "@ant-design/icons";
+import { CloudDownloadOutlined, CloudUploadOutlined, CopyOutlined, DeleteOutlined, EllipsisOutlined, ExportOutlined, ImportOutlined, RobotOutlined, SnippetsOutlined } from "@ant-design/icons";
 import { AppearanceSwitcher } from "@/components/AppearanceSwitcher";
 import { AssistantModal } from "@/components/AssistantModal";
 import styles from './index.module.css'
 import { RESUME_AGENT_PROMPT } from "@/constant/agentPrompt";
 import ImportJsonModal from "./components/ImportJsonModal";
-import CloudResumePanel from "./components/CloudResumePanel";
+import CloudResumePanel, { type CloudResumePanelHandle } from "./components/CloudResumePanel";
 import { exportJsonToTxt, importJsonFromTxt } from "@/util/file";
 import { migrateResume, migrateResumeList } from "@/util/resumeMigrate";
 import { UploadChangeParam } from "antd/es/upload";
@@ -44,6 +45,8 @@ function getPrintableResumeHtml(printContent: HTMLElement) {
 const Index = () => {
     const printRef = useRef<HTMLDivElement>(null);
     const editModalRef = useRef<EditResumeModalHandle>(null);
+    const cloudPanelRef = useRef<CloudResumePanelHandle>(null);
+    const fileTriggerRef = useRef<HTMLDivElement>(null);
     const rawList = JSON?.parse?.(localStorage.getItem('resumeList') || '[]');
     const migratedList = migrateResumeList(Array.isArray(rawList) ? rawList : []);
     const [resumeList, setResumeList] = React.useState<ResumeProps[]>(
@@ -53,6 +56,16 @@ const Index = () => {
     const [triggerImport, setTriggerImport] = React.useState(false);
     const [assistantOpen, setAssistantOpen] = React.useState(false);
     const [pasteImportOpen, setPasteImportOpen] = React.useState(false);
+    const [cloudSaving, setCloudSaving] = React.useState(false);
+
+    const openImportFile = () => {
+        const input = fileTriggerRef.current?.querySelector('input[type="file"]');
+        if (input instanceof HTMLInputElement) {
+            input.click();
+            return;
+        }
+        message.error('无法打开文件选择，请重试');
+    };
 
     const resume = useMemo(() => {
         return resumeList?.[activeIndex] || migrateResume(MOCK_RESUME);
@@ -231,6 +244,50 @@ const Index = () => {
         setTriggerImport(true);
     }
 
+    const moreMenuItems: MenuProps['items'] = [
+        {
+            key: 'export',
+            icon: <ExportOutlined />,
+            label: '导出 JSON',
+            onClick: handleExport,
+        },
+        {
+            key: 'import',
+            icon: <ImportOutlined />,
+            label: '导入 JSON',
+            onClick: openImportFile,
+        },
+        {
+            key: 'paste',
+            icon: <SnippetsOutlined />,
+            label: '粘贴 JSON',
+            onClick: () => setPasteImportOpen(true),
+        },
+        { type: 'divider', key: 'divider-cloud' },
+        {
+            key: 'cloud-save',
+            icon: <CloudUploadOutlined />,
+            label: cloudSaving ? '保存中…' : '保存到云端',
+            disabled: cloudSaving,
+            onClick: () => cloudPanelRef.current?.save(),
+        },
+        {
+            key: 'cloud-load',
+            icon: <CloudDownloadOutlined />,
+            label: '从云端加载',
+            onClick: () => cloudPanelRef.current?.openLoad(),
+        },
+        { type: 'divider', key: 'divider-agent' },
+        {
+            key: 'agent-prompt',
+            icon: <CopyOutlined />,
+            label: '复制 Agent 提示词',
+            onClick: () => {
+                void handleCopyAgentPrompt();
+            },
+        },
+    ];
+
     return (
         <div className={styles.shell}>
             <aside className={styles.sidebar}>
@@ -246,59 +303,62 @@ const Index = () => {
                     </div>
                 </div>
 
-                <div className={styles.sidebarScroll}>
-                    <section>
-                        <div className={styles.sectionHeading}>操作</div>
-                        <div className={styles.stack}>
-                            <EditResumeModal
-                                ref={editModalRef}
-                                data={resume}
-                                onSuccess={() => {
-                                    message.success('编辑已保存');
-                                }}
-                                onChange={handleEdit}
-                            >
-                                编辑简历
-                            </EditResumeModal>
-                            <Button type="primary" className="shadow-sm" onClick={handlePrint}>
-                                打印简历
-                            </Button>
-                            <Button icon={<RobotOutlined />} onClick={() => setAssistantOpen(true)}>
-                                AI 助手
-                            </Button>
-                            <div onClick={handleExport} className={styles.btnOutline}>
-                                <ExportOutlined />
-                                <span>导出 JSON</span>
+                <div className={styles.sidebarBody}>
+                    <div className={styles.opsPane}>
+                        <section>
+                            <div className={styles.sectionHeading}>操作</div>
+                            <div className={styles.stack}>
+                                <EditResumeModal
+                                    ref={editModalRef}
+                                    data={resume}
+                                    onSuccess={() => {
+                                        message.success('编辑已保存');
+                                    }}
+                                    onChange={handleEdit}
+                                >
+                                    编辑简历
+                                </EditResumeModal>
+                                <Button type="primary" className="shadow-sm" onClick={handlePrint}>
+                                    打印简历
+                                </Button>
+                                <Button icon={<RobotOutlined />} onClick={() => setAssistantOpen(true)}>
+                                    AI 助手
+                                </Button>
+                                <Dropdown
+                                    menu={{ items: moreMenuItems, selectable: false }}
+                                    trigger={['click']}
+                                    placement="bottomLeft"
+                                >
+                                    <Button icon={<EllipsisOutlined />}>
+                                        更多
+                                    </Button>
+                                </Dropdown>
                             </div>
-                            <div className={`${styles["json-upload"]} ${styles.btnOutline}`}>
+                            <div ref={fileTriggerRef} className={styles.hiddenFileTrigger}>
                                 <Upload accept=".txt" action="" showUploadList={false} onChange={handleUploadChange}>
-                                    <ImportOutlined />
-                                    <span className="ml-1">导入 JSON</span>
+                                    <span>导入 JSON</span>
                                 </Upload>
                             </div>
-                            <div className={styles.btnOutline} onClick={() => setPasteImportOpen(true)}>
-                                <SnippetsOutlined />
-                                <span>粘贴 JSON</span>
-                            </div>
-                            <CloudResumePanel resume={resume} onImport={handlePasteImport} />
-                            <div className={styles.btnOutline} onClick={handleCopyAgentPrompt}>
-                                <CopyOutlined />
-                                <span>复制 Agent 提示词</span>
-                            </div>
-                        </div>
-                        <p className={styles.hint}>
-                            复制提示词到网页 Agent，生成 JSON 后可粘贴导入，或继续用文件导入。若打印无响应，请检查弹窗拦截或换用 Chrome。
-                        </p>
-                    </section>
+                            <CloudResumePanel
+                                ref={cloudPanelRef}
+                                resume={resume}
+                                onImport={handlePasteImport}
+                                onBusyChange={setCloudSaving}
+                            />
+                            <p className={styles.hint}>
+                                导出、导入、粘贴 JSON，以及云端保存和 Agent 提示词都在「更多」里。若打印无响应，请检查弹窗拦截或换用 Chrome。
+                            </p>
+                        </section>
+                    </div>
 
-                    <section className={styles.sectionGrow}>
+                    <section className={styles.templatesDock} aria-label="模板">
                         <div className={styles.sectionHeadingRow}>
                             <div className={styles.sectionHeading}>模板</div>
                             <span className={styles.pill}>
                                 {resumeList.length} 份
                             </span>
                         </div>
-                        <div className={styles.stack}>
+                        <div className={styles.templateList}>
                             {resumeList.length > 0 &&
                                 resumeList.map((item, index) => (
                                     <div
@@ -311,7 +371,7 @@ const Index = () => {
                                             <Popconfirm
                                                 title="删除模板"
                                                 description="确定删除该模板吗?"
-                                                getPopupContainer={(triggerNode: HTMLElement) => triggerNode.parentNode as HTMLElement}
+                                                getPopupContainer={() => document.body}
                                                 onConfirm={(e) => {
                                                     e?.stopPropagation();
                                                     e?.preventDefault();
@@ -335,7 +395,8 @@ const Index = () => {
                                         )}
                                     </div>
                                 ))}
-
+                        </div>
+                        <div className={styles.templateCreate}>
                             <EditResumeModal
                                 mode="create"
                                 data={resume}
